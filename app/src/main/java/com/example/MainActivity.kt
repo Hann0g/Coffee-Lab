@@ -50,6 +50,7 @@ import com.example.ui.components.AddRecipeDialog
 import com.example.ui.components.BrewTimerSheet
 import com.example.ui.components.EditBeanWeightDialog
 import com.example.ui.components.LogBrewSheet
+import com.example.ui.components.SettingsDialog
 import com.example.ui.screens.LogScreen
 import com.example.ui.screens.RecipesScreen
 import com.example.ui.screens.StatsScreen
@@ -61,8 +62,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
-                CoffeeApp()
+            val viewModel: CoffeeViewModel = viewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            MyApplicationTheme(themeColor = uiState.themeColor) {
+                CoffeeApp(viewModel = viewModel)
             }
         }
     }
@@ -81,6 +84,7 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
     var showAddRecipeDialog by remember { mutableStateOf(false) }
     var showAddBeanBagDialog by remember { mutableStateOf(false) }
     var selectedBeanBagForEdit by remember { mutableStateOf<BeanBag?>(null) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
     val logSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val timerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -187,7 +191,8 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                                     snackbarHostState.showSnackbar("Logged ${recipe.name} (${recipe.defaultCoffeeGrams.toInt()}g)")
                                 }
                             },
-                            onDeleteBrew = { id -> viewModel.deleteBrew(id) }
+                            onDeleteBrew = { id -> viewModel.deleteBrew(id) },
+                            onOpenSettings = { showSettingsDialog = true }
                         )
                     }
 
@@ -204,7 +209,8 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                                 selectedRecipeForLog = recipe
                                 showLogSheet = true
                             },
-                            onDeleteRecipe = { id -> viewModel.deleteRecipe(id) }
+                            onDeleteRecipe = { id -> viewModel.deleteRecipe(id) },
+                            onOpenSettings = { showSettingsDialog = true }
                         )
                     }
 
@@ -226,7 +232,8 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                                     isActive = !bag.isActive
                                 )
                             },
-                            onDeleteBeanBag = { id -> viewModel.deleteBeanBag(id) }
+                            onDeleteBeanBag = { id -> viewModel.deleteBeanBag(id) },
+                            onOpenSettings = { showSettingsDialog = true }
                         )
                     }
                 }
@@ -349,6 +356,17 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                     snackbarHostState.showSnackbar("Updated ${currentBag.name} remaining weight to ${newWeight.toInt()}g")
                 }
             }
+        )
+    }
+
+    // App Settings & Theme Color Choice Dialog
+    if (showSettingsDialog) {
+        SettingsDialog(
+            selectedThemeColor = uiState.themeColor,
+            onSelectThemeColor = { color ->
+                viewModel.setThemeColor(color)
+            },
+            onDismiss = { showSettingsDialog = false }
         )
     }
 }

@@ -34,6 +34,14 @@
   - Total bean weight consumed (with 250g bag equivalent metrics).
   - Average dose per cup calculation and top preferred brew method.
 
+- **🎨 5 Dynamic Theme Palettes**
+  - **Milky Coffee:** Warm latte cream & mocha browns
+  - **Matcha Green:** Fresh botanical olive & forest tones
+  - **Espresso Amber:** Deep roast caramel & amber accents
+  - **Berry Roaster:** Vibrant fruity hibiscus & washed berry notes
+  - **Nordic Slate:** Clean cold brew slate blue & charcoal neutrals
+  - Persistent theme selection across app restarts.
+
 ---
 
 ## 🛠️ Tech Stack & Architecture

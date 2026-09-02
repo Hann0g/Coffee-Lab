@@ -1,6 +1,7 @@
 package com.example.ui
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.BeanBag
@@ -8,6 +9,7 @@ import com.example.data.CoffeeBrew
 import com.example.data.CoffeeDatabase
 import com.example.data.CoffeeRecipe
 import com.example.data.CoffeeRepository
+import com.example.ui.theme.AppThemeColor
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,6 +60,7 @@ data class CoffeeUiState(
     val filterRating: Int = 0, // 0 = all, 5 = 5 stars, 4 = 4+ stars, etc.
     val sortOption: LogSortOption = LogSortOption.NEWEST,
     val stats: CoffeeStats = CoffeeStats(),
+    val themeColor: AppThemeColor = AppThemeColor.MILKY_COFFEE,
     val timerRunning: Boolean = false,
     val timerElapsedSeconds: Int = 0,
     val timerRecipe: CoffeeRecipe? = null,
@@ -83,12 +86,16 @@ private data class TimerTriple(
 
 class CoffeeViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val prefs = application.getSharedPreferences("coffee_app_prefs", Context.MODE_PRIVATE)
     private val repository: CoffeeRepository
     private var timerJob: Job? = null
 
     private val _currentTab = MutableStateFlow(CoffeeTab.LOG)
     private val _filterRating = MutableStateFlow(0)
     private val _sortOption = MutableStateFlow(LogSortOption.NEWEST)
+    private val _themeColor = MutableStateFlow(
+        AppThemeColor.fromId(prefs.getString("pref_theme_color", AppThemeColor.MILKY_COFFEE.id))
+    )
     private val _timerRunning = MutableStateFlow(false)
     private val _timerElapsedSeconds = MutableStateFlow(0)
     private val _timerRecipe = MutableStateFlow<CoffeeRecipe?>(null)
@@ -126,8 +133,9 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
             dataFlow,
             _currentTab,
             filterSortFlow,
-            timerFlow
-        ) { (brews, recipes, bags), tab, (filterRating, sortOption), (running, elapsed, timerRec) ->
+            timerFlow,
+            _themeColor
+        ) { (brews, recipes, bags), tab, (filterRating, sortOption), (running, elapsed, timerRec), themeColor ->
             val stats = calculateStats(brews, bags)
             val recipeRatings = calculateRecipeRatings(brews)
             val filteredBrews = processFilteredBrews(brews, filterRating, sortOption)
@@ -142,6 +150,7 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
                 filterRating = filterRating,
                 sortOption = sortOption,
                 stats = stats,
+                themeColor = themeColor,
                 timerRunning = running,
                 timerElapsedSeconds = elapsed,
                 timerRecipe = timerRec,
@@ -439,6 +448,11 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
                 notes = if (notes.isNotBlank()) notes else "Timed brew (${formatTime(elapsed)})"
             )
         }
+    }
+
+    fun setThemeColor(color: AppThemeColor) {
+        _themeColor.value = color
+        prefs.edit().putString("pref_theme_color", color.id).apply()
     }
 
     private fun formatTime(totalSeconds: Int): String {

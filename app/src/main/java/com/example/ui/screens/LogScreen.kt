@@ -25,7 +25,9 @@ import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Scale
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material3.Card
@@ -67,7 +69,8 @@ fun LogScreen(
     onOpenLogSheet: (CoffeeRecipe?) -> Unit,
     onOpenTimer: (CoffeeRecipe) -> Unit,
     onQuickLog: (CoffeeRecipe) -> Unit,
-    onDeleteBrew: (Long) -> Unit
+    onDeleteBrew: (Long) -> Unit,
+    onOpenSettings: () -> Unit = {}
 ) {
     val todayDateStr = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(Date())
 
@@ -80,12 +83,48 @@ fun LogScreen(
             // Header summary with Bold Typography hierarchy
             item {
                 Column {
-                    Text(
-                        text = todayDateStr.uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        letterSpacing = 1.5.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = todayDateStr.uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            letterSpacing = 1.5.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { onOpenSettings() }
+                                .testTag("btn_open_settings")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Palette,
+                                    contentDescription = "Theme Color Settings",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Theme",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
@@ -65,7 +66,8 @@ fun RecipesScreen(
     onOpenAddRecipeDialog: () -> Unit,
     onStartTimer: (CoffeeRecipe) -> Unit,
     onOpenLogSheet: (CoffeeRecipe) -> Unit,
-    onDeleteRecipe: (Long) -> Unit
+    onDeleteRecipe: (Long) -> Unit,
+    onOpenSettings: () -> Unit = {}
 ) {
     var showRatioCalculator by remember { mutableStateOf(false) }
     var calcCoffeeGrams by remember { mutableDoubleStateOf(18.0) }
@@ -100,32 +102,57 @@ fun RecipesScreen(
                         )
                     }
 
-                    // Toggle Ratio Calculator Button
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (showRatioCalculator) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                        border = BorderStroke(1.dp, if (showRatioCalculator) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .clickable { showRatioCalculator = !showRatioCalculator }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        // Theme Settings Button
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { onOpenSettings() }
+                                .testTag("btn_open_settings_recipes")
                         ) {
                             Icon(
-                                Icons.Default.Calculate,
-                                contentDescription = "Ratio Calculator",
-                                modifier = Modifier.size(18.dp),
-                                tint = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                                Icons.Default.Palette,
+                                contentDescription = "Theme Color Settings",
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary
                             )
-                            Text(
-                                text = "Ratio Calc",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Black,
-                                color = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
-                            )
+                        }
+
+                        // Toggle Ratio Calculator Button
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (showRatioCalculator) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(1.dp, if (showRatioCalculator) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { showRatioCalculator = !showRatioCalculator }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Calculate,
+                                    contentDescription = "Ratio Calculator",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Ratio Calc",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }
