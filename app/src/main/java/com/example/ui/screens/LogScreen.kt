@@ -181,28 +181,21 @@ fun LogScreen(
                             }
 
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable { onOpenEditBeanWeight(activeBeanBag) }
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        contentDescription = "Edit Weight",
-                                        modifier = Modifier.size(12.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Text(
-                                        text = "Adjust",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit Weight",
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .size(18.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                             }
                         }
                     }

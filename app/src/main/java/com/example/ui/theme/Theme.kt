@@ -11,51 +11,51 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = BoldPurplePrimaryDark,
-    onPrimary = BoldPurpleOnPrimaryDark,
-    primaryContainer = BoldPurplePrimaryContainerDark,
-    onPrimaryContainer = BoldPurpleOnPrimaryContainerDark,
-    secondary = BoldSecondaryDark,
-    onSecondary = BoldOnSecondaryDark,
-    secondaryContainer = BoldSecondaryContainerDark,
-    onSecondaryContainer = BoldOnSecondaryContainerDark,
-    tertiary = BoldTertiaryContainer,
-    onTertiary = BoldOnTertiaryContainer,
-    background = BoldBackgroundDark,
-    onBackground = BoldOnBackgroundDark,
-    surface = BoldSurfaceDark,
-    onSurface = BoldOnSurfaceDark,
-    surfaceVariant = BoldSurfaceVariantDark,
-    onSurfaceVariant = BoldOnSurfaceVariantDark,
-    outline = BoldOutlineDark,
-    outlineVariant = BoldOutlineVariantDark
+    primary = CoffeePrimaryDark,
+    onPrimary = CoffeeOnPrimaryDark,
+    primaryContainer = CoffeePrimaryContainerDark,
+    onPrimaryContainer = CoffeeOnPrimaryContainerDark,
+    secondary = CoffeeSecondaryDark,
+    onSecondary = CoffeeOnSecondaryDark,
+    secondaryContainer = CoffeeSecondaryContainerDark,
+    onSecondaryContainer = CoffeeOnSecondaryContainerDark,
+    tertiary = CoffeeTertiaryContainer,
+    onTertiary = CoffeeOnTertiaryContainer,
+    background = CoffeeBackgroundDark,
+    onBackground = CoffeeOnBackgroundDark,
+    surface = CoffeeSurfaceDark,
+    onSurface = CoffeeOnSurfaceDark,
+    surfaceVariant = CoffeeSurfaceVariantDark,
+    onSurfaceVariant = CoffeeOnSurfaceVariantDark,
+    outline = CoffeeOutlineDark,
+    outlineVariant = CoffeeOutlineVariantDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = BoldPurplePrimary,
-    onPrimary = BoldPurpleOnPrimary,
-    primaryContainer = BoldPurplePrimaryContainer,
-    onPrimaryContainer = BoldPurpleOnPrimaryContainer,
-    secondary = BoldSecondary,
-    onSecondary = BoldOnSecondary,
-    secondaryContainer = BoldSecondaryContainer,
-    onSecondaryContainer = BoldOnSecondaryContainer,
-    tertiary = BoldTertiary,
-    onTertiary = BoldOnTertiary,
-    background = BoldBackgroundLight,
-    onBackground = BoldOnBackgroundLight,
-    surface = BoldSurfaceLight,
-    onSurface = BoldOnSurfaceLight,
-    surfaceVariant = BoldSurfaceVariantLight,
-    onSurfaceVariant = BoldOnSurfaceVariantLight,
-    outline = BoldOutlineLight,
-    outlineVariant = BoldOutlineVariantLight
+    primary = CoffeePrimary,
+    onPrimary = CoffeeOnPrimary,
+    primaryContainer = CoffeePrimaryContainer,
+    onPrimaryContainer = CoffeeOnPrimaryContainer,
+    secondary = CoffeeSecondary,
+    onSecondary = CoffeeOnSecondary,
+    secondaryContainer = CoffeeSecondaryContainer,
+    onSecondaryContainer = CoffeeOnSecondaryContainer,
+    tertiary = CoffeeTertiary,
+    onTertiary = CoffeeOnTertiary,
+    background = CoffeeBackgroundLight,
+    onBackground = CoffeeOnBackgroundLight,
+    surface = CoffeeSurfaceLight,
+    onSurface = CoffeeOnSurfaceLight,
+    surfaceVariant = CoffeeSurfaceVariantLight,
+    onSurfaceVariant = CoffeeOnSurfaceVariantLight,
+    outline = CoffeeOutlineLight,
+    outlineVariant = CoffeeOutlineVariantLight
 )
 
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Keep handcrafted Bold Typography theme
+    dynamicColor: Boolean = false, // Keep milky coffee brown theme
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
@@ -73,4 +73,3 @@ fun MyApplicationTheme(
         content = content
     )
 }
-
