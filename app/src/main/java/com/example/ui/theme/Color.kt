@@ -7,43 +7,51 @@ enum class AppThemeColor(
     val displayName: String,
     val description: String,
     val previewColor: Color,
-    val secondaryPreview: Color
+    val secondaryPreview: Color,
+    val requiredCoffees: Int = 0
 ) {
     MILKY_COFFEE(
         id = "milky_coffee",
         displayName = "Milky Coffee",
         description = "Warm latte & creamy mocha",
         previewColor = Color(0xFF704828),
-        secondaryPreview = Color(0xFFF3E7DC)
+        secondaryPreview = Color(0xFFF3E7DC),
+        requiredCoffees = 0
     ),
     MATCHA_GREEN(
         id = "matcha_green",
         displayName = "Matcha Green",
         description = "Fresh green tea & botanical notes",
         previewColor = Color(0xFF2E6B34),
-        secondaryPreview = Color(0xFFD8ECD8)
+        secondaryPreview = Color(0xFFD8ECD8),
+        requiredCoffees = 1
     ),
     ESPRESSO_AMBER(
         id = "espresso_amber",
         displayName = "Espresso Amber",
         description = "Deep dark roast & warm caramel",
         previewColor = Color(0xFF8F4314),
-        secondaryPreview = Color(0xFFFCE6D6)
+        secondaryPreview = Color(0xFFFCE6D6),
+        requiredCoffees = 10
     ),
     BERRY_ROASTER(
         id = "berry_roaster",
         displayName = "Berry Roaster",
         description = "Fruity origin notes & wild hibiscus",
         previewColor = Color(0xFF8E2A59),
-        secondaryPreview = Color(0xFFFDD9E8)
+        secondaryPreview = Color(0xFFFDD9E8),
+        requiredCoffees = 30
     ),
     NORDIC_SLATE(
         id = "nordic_slate",
         displayName = "Nordic Slate",
         description = "Cold brew & Scandinavian slate",
         previewColor = Color(0xFF285D7C),
-        secondaryPreview = Color(0xFFDAEBF5)
+        secondaryPreview = Color(0xFFDAEBF5),
+        requiredCoffees = 50
     );
+
+    fun isUnlocked(trackedCoffees: Int): Boolean = trackedCoffees >= requiredCoffees
 
     companion object {
         fun fromId(id: String?): AppThemeColor {

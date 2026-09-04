@@ -5,11 +5,26 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Coffee
@@ -17,12 +32,16 @@ import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -35,7 +54,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -75,6 +96,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val themeUnlockEvent by viewModel.themeUnlockEvent.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -95,66 +117,62 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
         modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            NavigationBar(
+            Surface(
                 modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .testTag("bottom_nav"),
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 4.dp
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
             ) {
-                NavigationBarItem(
-                    selected = uiState.currentTab == CoffeeTab.LOG,
-                    onClick = { viewModel.setTab(CoffeeTab.LOG) },
-                    icon = {
-                        Icon(
-                            imageVector = if (uiState.currentTab == CoffeeTab.LOG) Icons.Filled.Coffee else Icons.Outlined.Coffee,
-                            contentDescription = "Log"
-                        )
-                    },
-                    label = { Text("Log", fontWeight = if (uiState.currentTab == CoffeeTab.LOG) FontWeight.Black else FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier.testTag("tab_log")
-                )
-
-                NavigationBarItem(
-                    selected = uiState.currentTab == CoffeeTab.RECIPES,
-                    onClick = { viewModel.setTab(CoffeeTab.RECIPES) },
-                    icon = {
-                        Icon(
-                            imageVector = if (uiState.currentTab == CoffeeTab.RECIPES) Icons.Filled.MenuBook else Icons.Outlined.MenuBook,
-                            contentDescription = "Recipes"
-                        )
-                    },
-                    label = { Text("Recipes", fontWeight = if (uiState.currentTab == CoffeeTab.RECIPES) FontWeight.Black else FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier.testTag("tab_recipes")
-                )
-
-                NavigationBarItem(
-                    selected = uiState.currentTab == CoffeeTab.STATS,
-                    onClick = { viewModel.setTab(CoffeeTab.STATS) },
-                    icon = {
-                        Icon(
-                            imageVector = if (uiState.currentTab == CoffeeTab.STATS) Icons.Filled.BarChart else Icons.Outlined.BarChart,
-                            contentDescription = "Stats"
-                        )
-                    },
-                    label = { Text("Stats & Beans", fontWeight = if (uiState.currentTab == CoffeeTab.STATS) FontWeight.Black else FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier.testTag("tab_stats")
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    listOf(
+                        Triple(CoffeeTab.LOG, "Brews", Icons.Default.Coffee),
+                        Triple(CoffeeTab.RECIPES, "Recipes", Icons.Default.MenuBook),
+                        Triple(CoffeeTab.STATS, "Beans & Stats", Icons.Default.BarChart)
+                    ).forEach { (tab, label, icon) ->
+                        val isSelected = uiState.currentTab == tab
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { viewModel.setTab(tab) }
+                                .testTag("tab_${tab.name.lowercase()}")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = label,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     ) { innerPadding ->
@@ -281,6 +299,7 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
             elapsedSeconds = uiState.timerElapsedSeconds,
             onTogglePlayPause = { viewModel.pauseOrResumeTimer() },
             onReset = { viewModel.resetTimer() },
+            onSeekSeconds = { viewModel.seekTimer(it) },
             onFinishAndLog = { rating, notes ->
                 viewModel.finishTimerAndLog(rating, notes)
                 showTimerSheet = false
@@ -363,10 +382,81 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
     if (showSettingsDialog) {
         SettingsDialog(
             selectedThemeColor = uiState.themeColor,
+            trackedCoffees = uiState.stats.totalBrews,
             onSelectThemeColor = { color ->
                 viewModel.setThemeColor(color)
             },
             onDismiss = { showSettingsDialog = false }
+        )
+    }
+
+    // Theme Unlock Milestone Celebration Dialog
+    if (themeUnlockEvent != null) {
+        val unlockedTheme = themeUnlockEvent!!
+        AlertDialog(
+            onDismissRequest = { viewModel.clearThemeUnlockEvent() },
+            icon = {
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(unlockedTheme.previewColor),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clip(CircleShape)
+                            .background(unlockedTheme.secondaryPreview)
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = "🎉 New Theme Unlocked!",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Black
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "You reached ${unlockedTheme.requiredCoffees} ${if (unlockedTheme.requiredCoffees == 1) "coffee" else "coffees"} tracked!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "The \"${unlockedTheme.displayName}\" palette (${unlockedTheme.description}) is now unlocked and available in App Settings.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.setThemeColor(unlockedTheme)
+                        viewModel.clearThemeUnlockEvent()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Apply Now", fontWeight = FontWeight.Black)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { viewModel.clearThemeUnlockEvent() },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Later")
+                }
+            }
         )
     }
 }

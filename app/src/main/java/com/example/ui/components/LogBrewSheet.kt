@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,8 +22,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Coffee
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -77,6 +83,32 @@ fun LogBrewSheet(
 ) {
     val defaultRec = initialRecipe ?: recipes.firstOrNull()
     var selectedRecipe by remember { mutableStateOf(defaultRec) }
+
+    val isDefaultPourOver = defaultRec?.method.equals("Pour Over", ignoreCase = true) ||
+            defaultRec?.name?.contains("V60", ignoreCase = true) == true ||
+            defaultRec?.name?.contains("Chemex", ignoreCase = true) == true ||
+            defaultRec?.name?.contains("Pour Over", ignoreCase = true) == true ||
+            defaultRec == null
+
+    var selectedMethod by remember {
+        mutableStateOf(if (isDefaultPourOver) "Pour Over" else (defaultRec?.method ?: "Pour Over"))
+    }
+    val isPourOver = selectedMethod.equals("Pour Over", ignoreCase = true)
+
+    // Pour Over Specific Options State
+    var selectedDripper by remember {
+        mutableStateOf(
+            if (defaultRec?.name?.contains("Chemex", ignoreCase = true) == true) "Chemex"
+            else "Hario V60"
+        )
+    }
+    var selectedTechnique by remember { mutableStateOf("4:6 Method") }
+    var bloomWaterGrams by remember { mutableDoubleStateOf(45.0) }
+    var bloomTimeSeconds by remember { mutableIntStateOf(45) }
+    var selectedFilterPaper by remember { mutableStateOf("White Tabbed") }
+    var selectedAgitation by remember { mutableStateOf("Gentle Swirl") }
+    var showPourOverDetails by remember { mutableStateOf(true) }
+
     var coffeeGrams by remember { mutableDoubleStateOf(defaultRec?.defaultCoffeeGrams ?: 18.0) }
     var waterGrams by remember { mutableDoubleStateOf(defaultRec?.defaultWaterGrams ?: 300.0) }
     var grindSize by remember { mutableStateOf(defaultRec?.grindSize ?: "Medium") }
@@ -132,9 +164,71 @@ fun LogBrewSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Recipe selection chips
+            // Method Selector Chips
             Text(
-                text = "METHOD / RECIPE",
+                text = "BREW METHOD",
+                style = MaterialTheme.typography.labelSmall,
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val brewMethods = listOf("Pour Over", "Espresso", "AeroPress", "French Press", "Cold Brew")
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(brewMethods) { method ->
+                    val isSelected = selectedMethod.equals(method, ignoreCase = true)
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                        border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable {
+                                selectedMethod = method
+                                val matchingRecipe = recipes.firstOrNull { it.method.equals(method, ignoreCase = true) }
+                                if (matchingRecipe != null) {
+                                    selectedRecipe = matchingRecipe
+                                    coffeeGrams = matchingRecipe.defaultCoffeeGrams
+                                    waterGrams = matchingRecipe.defaultWaterGrams
+                                    grindSize = matchingRecipe.grindSize
+                                    waterTemp = matchingRecipe.targetTempCelsius
+                                }
+                            }
+                            .testTag("method_chip_${method.lowercase().replace(" ", "_")}")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (method == "Pour Over") Icons.Default.WaterDrop else Icons.Default.Coffee,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = method,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Recipe selection chips
+            val filteredRecipes = recipes.filter { it.method.equals(selectedMethod, ignoreCase = true) }.ifEmpty { recipes.take(4) }
+            Text(
+                text = "RECIPE PRESET",
                 style = MaterialTheme.typography.labelSmall,
                 letterSpacing = 1.sp,
                 fontWeight = FontWeight.Black,
@@ -149,8 +243,8 @@ fun LogBrewSheet(
                     .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                recipes.take(4).forEach { recipe ->
-                    val isSelected = selectedRecipe?.id == recipe.id || (selectedRecipe == null && recipe.id == defaultRec?.id)
+                filteredRecipes.take(4).forEach { recipe ->
+                    val isSelected = selectedRecipe?.id == recipe.id
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
@@ -164,6 +258,11 @@ fun LogBrewSheet(
                                 waterGrams = recipe.defaultWaterGrams
                                 grindSize = recipe.grindSize
                                 waterTemp = recipe.targetTempCelsius
+                                if (recipe.name.contains("Chemex", ignoreCase = true)) {
+                                    selectedDripper = "Chemex"
+                                } else if (recipe.name.contains("V60", ignoreCase = true)) {
+                                    selectedDripper = "Hario V60"
+                                }
                             }
                     ) {
                         Text(
@@ -175,6 +274,441 @@ fun LogBrewSheet(
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             maxLines = 1
                         )
+                    }
+                }
+            }
+
+            // POUR OVER OPTIONS CARD (Shown specifically when method is Pour Over)
+            if (isPourOver) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("card_pour_over_options")
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Section Header
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.primary
+                                ) {
+                                    Icon(
+                                        Icons.Default.WaterDrop,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier
+                                            .padding(5.dp)
+                                            .size(14.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "POUR OVER OPTIONS",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Black,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                    Text(
+                                        text = "$selectedDripper · $selectedTechnique",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { showPourOverDetails = !showPourOverDetails }
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (showPourOverDetails) "Collapse" else "Options",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Icon(
+                                        imageVector = if (showPourOverDetails) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        if (showPourOverDetails) {
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 1. Dripper / Brewer selection
+                            Text(
+                                text = "DRIPPER / BREWER",
+                                style = MaterialTheme.typography.labelSmall,
+                                letterSpacing = 1.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val drippers = listOf(
+                                    "Hario V60" to "Conical 60°",
+                                    "Kalita Wave" to "Flat-Bottom 3-Hole",
+                                    "Chemex" to "Thick Paper Filter",
+                                    "Origami" to "20-Rib Hybrid",
+                                    "Fellow Stagg" to "Insulated Flat",
+                                    "Clever Dripper" to "Immersion Hybrid"
+                                )
+                                items(drippers) { (dripName, dripSub) ->
+                                    val isChosen = selectedDripper == dripName
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isChosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            if (isChosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                                        ),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable {
+                                                selectedDripper = dripName
+                                                if (dripName == "Chemex") {
+                                                    grindSize = "Medium-Coarse"
+                                                } else if (dripName == "Kalita Wave") {
+                                                    grindSize = "Medium"
+                                                } else if (dripName == "Hario V60" && selectedTechnique != "4:6 Method") {
+                                                    grindSize = "Medium-Fine"
+                                                }
+                                            }
+                                            .testTag("btn_dripper_${dripName.lowercase().replace(" ", "_")}")
+                                    ) {
+                                        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                                            Text(
+                                                text = dripName,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isChosen) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = dripSub,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontSize = 10.sp,
+                                                color = if (isChosen) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 2. Pour Technique
+                            Text(
+                                text = "POURING TECHNIQUE",
+                                style = MaterialTheme.typography.labelSmall,
+                                letterSpacing = 1.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val techniques = listOf(
+                                    Triple("4:6 Method", "Tetsu Kasuya", "5-Pour balance (Sweet/Strength)"),
+                                    Triple("Hoffmann 2-Pour", "James Hoffmann", "60% + 40% high clarity"),
+                                    Triple("3-Stage Pulse", "Classic Balanced", "Even saturation & full body"),
+                                    Triple("Continuous Spiral", "Gentle Spiral", "Smooth constant flow"),
+                                    Triple("Osmotic Flow", "Kafedokoro", "Low-agitation center trickle")
+                                )
+                                items(techniques) { (techName, author, desc) ->
+                                    val isChosen = selectedTechnique == techName
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isChosen) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            if (isChosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                                        ),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable {
+                                                selectedTechnique = techName
+                                                if (techName == "4:6 Method") {
+                                                    grindSize = "Medium-Coarse"
+                                                } else if (techName == "Hoffmann 2-Pour") {
+                                                    grindSize = "Medium-Fine"
+                                                } else if (techName == "Osmotic Flow") {
+                                                    grindSize = "Coarse"
+                                                }
+                                            }
+                                            .testTag("btn_technique_${techName.lowercase().replace(" ", "_")}")
+                                    ) {
+                                        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                                            Text(
+                                                text = techName,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = author,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (isChosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 3. Bloom Stage
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "BLOOM STAGE",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    letterSpacing = 1.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "${bloomWaterGrams.toInt()}g water · ${bloomTimeSeconds}s",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf(
+                                    "2x" to (coffeeGrams * 2.0),
+                                    "3x" to (coffeeGrams * 3.0),
+                                    "45g" to 45.0,
+                                    "60g" to 60.0
+                                ).forEach { (label, grams) ->
+                                    val isChosen = bloomWaterGrams.toInt() == grams.toInt()
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = if (isChosen) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            if (isChosen) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                        ),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable { bloomWaterGrams = grams }
+                                    ) {
+                                        Text(
+                                            text = "$label (${grams.toInt()}g)",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isChosen) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.padding(vertical = 6.dp),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            // Bloom duration chips
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf(30 to "30s Fast", 45 to "45s Standard", 60 to "60s Extended").forEach { (sec, label) ->
+                                    val isChosen = bloomTimeSeconds == sec
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = if (isChosen) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            if (isChosen) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                        ),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable { bloomTimeSeconds = sec }
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isChosen) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.padding(vertical = 6.dp),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 4. Filter Paper & Agitation Selection
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                // Filter Paper
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "FILTER PAPER",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 10.sp,
+                                        letterSpacing = 0.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    listOf("White Tabbed", "Natural Brown", "Sibarist Fast").forEach { filter ->
+                                        val isChosen = selectedFilterPaper == filter
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = if (isChosen) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 2.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .clickable { selectedFilterPaper = filter }
+                                        ) {
+                                            Text(
+                                                text = filter,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontSize = 11.sp,
+                                                fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Agitation
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "AGITATION",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 10.sp,
+                                        letterSpacing = 0.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    listOf("Gentle Swirl", "Spoon Excavate", "None (Stream)").forEach { agit ->
+                                        val isChosen = selectedAgitation == agit
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = if (isChosen) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 2.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .clickable { selectedAgitation = agit }
+                                        ) {
+                                            Text(
+                                                text = agit,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontSize = 11.sp,
+                                                fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 5. Dynamic Live Pour Roadmap
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.surface,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.WaterDrop,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Text(
+                                            text = "POUR ROADMAP (${waterGrams.toInt()}g total)",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Black,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    val roadmapText = when (selectedTechnique) {
+                                        "4:6 Method" -> {
+                                            val pourSize = (waterGrams / 5.0).toInt()
+                                            "Bloom: ${pourSize}g (0:00) ➔ 2nd: ${pourSize * 2}g (0:45) ➔ 3rd: ${pourSize * 3}g (1:30) ➔ 4th: ${pourSize * 4}g (2:15) ➔ 5th: ${waterGrams.toInt()}g (3:00)"
+                                        }
+                                        "Hoffmann 2-Pour" -> {
+                                            val bloom = bloomWaterGrams.toInt()
+                                            val pour1 = (waterGrams * 0.6).toInt()
+                                            "Bloom: ${bloom}g (0:00) ➔ Pour 1: ${pour1}g (0:45) ➔ Pour 2: ${waterGrams.toInt()}g (1:15) ➔ Drawdown ~3:30"
+                                        }
+                                        "3-Stage Pulse" -> {
+                                            val bloom = bloomWaterGrams.toInt()
+                                            val remaining = waterGrams - bloom
+                                            val p1 = bloom + (remaining * 0.5).toInt()
+                                            "Bloom: ${bloom}g (0:00) ➔ Pulse 1: ${p1}g (0:45) ➔ Pulse 2: ${waterGrams.toInt()}g (1:30) ➔ Drawdown ~3:15"
+                                        }
+                                        "Continuous Spiral" -> {
+                                            "Bloom: ${bloomWaterGrams.toInt()}g (0:00) ➔ Steady Spiral to ${waterGrams.toInt()}g (0:45) ➔ Drawdown ~2:45"
+                                        }
+                                        else -> {
+                                            "Bloom: ${bloomWaterGrams.toInt()}g (0:00) ➔ Center Trickle to ${waterGrams.toInt()}g (0:40) ➔ Drawdown ~3:45"
+                                        }
+                                    }
+                                    Text(
+                                        text = roadmapText,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -405,6 +939,62 @@ fun LogBrewSheet(
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            // Water Temperature selection
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "WATER TEMPERATURE",
+                    style = MaterialTheme.typography.labelSmall,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "${waterTemp}°C",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf(88, 90, 92, 94, 96).forEach { temp ->
+                    val isSelected = waterTemp == temp
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                        border = BorderStroke(
+                            1.dp,
+                            if (isSelected) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { waterTemp = temp }
+                            .testTag("temp_chip_$temp")
+                    ) {
+                        Text(
+                            text = "${temp}°C",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             // Bean selection
             if (beanBags.isNotEmpty()) {
                 Row(
@@ -510,11 +1100,42 @@ fun LogBrewSheet(
             // Save Button
             Button(
                 onClick = {
-                    val recipeName = selectedRecipe?.name ?: "Custom Brew"
+                    val finalRecipeName = if (isPourOver) {
+                        if (selectedRecipe != null && !selectedRecipe!!.name.startsWith("V60") && !selectedRecipe!!.name.startsWith("Chemex") && !selectedRecipe!!.name.equals("Custom Brew")) {
+                            "${selectedRecipe!!.name} ($selectedDripper)"
+                        } else {
+                            "$selectedDripper ($selectedTechnique)"
+                        }
+                    } else {
+                        selectedRecipe?.name ?: "Custom Brew"
+                    }
+
                     val roastName = beanBags.find { it.id == selectedBagId }?.name ?: "House Blend"
-                    val targetTime = selectedRecipe?.targetTimeSeconds ?: 180
+                    val targetTime = if (isPourOver) {
+                        when (selectedTechnique) {
+                            "4:6 Method" -> 210
+                            "Hoffmann 2-Pour" -> 210
+                            "3-Stage Pulse" -> 195
+                            "Single Continuous" -> 165
+                            "Osmotic Flow" -> 240
+                            else -> 180
+                        }
+                    } else {
+                        selectedRecipe?.targetTimeSeconds ?: 180
+                    }
+
+                    val pourOverMetadata = if (isPourOver) {
+                        "[Pour Over: $selectedDripper | $selectedTechnique | Bloom: ${bloomWaterGrams.toInt()}g (${bloomTimeSeconds}s) | Filter: $selectedFilterPaper | Agitation: $selectedAgitation]"
+                    } else ""
+
+                    val finalNotes = if (pourOverMetadata.isNotBlank()) {
+                        if (notes.isNotBlank()) "$notes\n$pourOverMetadata" else pourOverMetadata
+                    } else {
+                        notes
+                    }
+
                     onSave(
-                        recipeName,
+                        finalRecipeName,
                         coffeeGrams,
                         waterGrams,
                         ratioText,
@@ -523,7 +1144,7 @@ fun LogBrewSheet(
                         waterTemp,
                         roastName,
                         rating,
-                        notes,
+                        finalNotes,
                         selectedBagId
                     )
                 },

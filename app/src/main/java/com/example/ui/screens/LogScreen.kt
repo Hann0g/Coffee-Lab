@@ -29,6 +29,8 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -95,6 +98,7 @@ fun LogScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
 
+                        // Theme settings button
                         Surface(
                             shape = RoundedCornerShape(10.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
@@ -105,7 +109,7 @@ fun LogScreen(
                                 .testTag("btn_open_settings")
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
@@ -125,7 +129,7 @@ fun LogScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -137,28 +141,63 @@ fun LogScreen(
                             fontWeight = FontWeight.Black,
                             color = MaterialTheme.colorScheme.onBackground
                         )
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            // Quick Log Brew action button
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { onOpenLogSheet(null) }
+                                    .testTag("btn_log_brew_header")
                             ) {
-                                Icon(
-                                    Icons.Default.Coffee,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "${stats.todayBrews} today",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = "Log Brew",
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "Log Brew",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Coffee,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Text(
+                                        text = "${stats.todayBrews} today",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
                             }
                         }
                     }
@@ -424,25 +463,35 @@ fun LogScreen(
             }
         }
 
-        // Floating Action Button
+        // Pour Timer Floating Action Button
         FloatingActionButton(
-            onClick = { onOpenLogSheet(null) },
+            onClick = {
+                val pourOverRecipe = recipes.firstOrNull { it.method.equals("Pour Over", ignoreCase = true) }
+                    ?: recipes.firstOrNull()
+                if (pourOverRecipe != null) {
+                    onOpenTimer(pourOverRecipe)
+                }
+            },
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             shape = RoundedCornerShape(18.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp)
-                .testTag("fab_log_brew")
+                .testTag("fab_pour_timer")
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Log Brew")
+                Icon(
+                    Icons.Default.Timer,
+                    contentDescription = "Pour Timer",
+                    modifier = Modifier.size(20.dp)
+                )
                 Text(
-                    text = "Log Brew",
+                    text = "Pour Timer",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Black
                 )
@@ -627,8 +676,45 @@ fun BrewCard(
                 }
             }
 
+            // Pour Over info badge if available
+            val pourOverRegex = remember { Regex("\\[Pour Over: ([^\\]]+)\\]") }
+            val pourOverMatch = remember(brew.notes) { pourOverRegex.find(brew.notes) }
+            val displayNotes = remember(brew.notes) {
+                brew.notes.replace(Regex("\\[Pour Over: [^\\]]+\\]\n?"), "").trim()
+            }
+
+            if (pourOverMatch != null) {
+                val details = pourOverMatch.groupValues[1]
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.WaterDrop,
+                            contentDescription = "Pour Over Setup",
+                            modifier = Modifier.size(13.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = details,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+
             // Notes / Bean line
-            if (brew.notes.isNotBlank() || brew.beanRoast.isNotBlank()) {
+            if (displayNotes.isNotBlank() || brew.beanRoast.isNotBlank()) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -643,9 +729,9 @@ fun BrewCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    if (brew.notes.isNotBlank()) {
+                    if (displayNotes.isNotBlank()) {
                         Text(
-                            text = brew.notes,
+                            text = displayNotes,
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,

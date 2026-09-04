@@ -19,16 +19,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -38,10 +41,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -53,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.CoffeeRecipe
@@ -72,6 +78,8 @@ fun RecipesScreen(
     var showRatioCalculator by remember { mutableStateOf(false) }
     var calcCoffeeGrams by remember { mutableDoubleStateOf(18.0) }
     var calcRatio by remember { mutableDoubleStateOf(16.7) }
+    var showCoffeeDoseDialog by remember { mutableStateOf(false) }
+    var doseInputText by remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -142,12 +150,12 @@ fun RecipesScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Calculate,
-                                    contentDescription = "Ratio Calculator",
+                                    contentDescription = "Ratio Cal",
                                     modifier = Modifier.size(18.dp),
                                     tint = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = "Ratio Calc",
+                                    text = "Ratio Cal",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Black,
                                     color = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
@@ -175,7 +183,7 @@ fun RecipesScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "BREW RATIO CALCULATOR",
+                                    text = "BREW RATIO CAL",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                     letterSpacing = 1.sp,
@@ -196,19 +204,56 @@ fun RecipesScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column {
-                                    Text(
-                                        text = "COFFEE DOSE",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        letterSpacing = 1.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = "%.1fg".format(Locale.US, calcCoffeeGrams),
-                                        style = MaterialTheme.typography.headlineLarge,
-                                        fontWeight = FontWeight.Black,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
+                                // Clickable Coffee Dose to enter exact amount without using slider bar
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            doseInputText = if (calcCoffeeGrams % 1.0 == 0.0) {
+                                                calcCoffeeGrams.toInt().toString()
+                                            } else {
+                                                "%.1f".format(Locale.US, calcCoffeeGrams)
+                                            }
+                                            showCoffeeDoseDialog = true
+                                        }
+                                        .testTag("btn_coffee_dose_push")
+                                ) {
+                                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Text(
+                                                text = "COFFEE DOSE",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                letterSpacing = 1.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                            Icon(
+                                                Icons.Default.Edit,
+                                                contentDescription = "Edit coffee dose",
+                                                modifier = Modifier.size(13.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        Text(
+                                            text = "%.1fg".format(Locale.US, calcCoffeeGrams),
+                                            style = MaterialTheme.typography.headlineLarge,
+                                            fontWeight = FontWeight.Black,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "Push to enter amount",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
                                 }
 
                                 Text(
@@ -238,13 +283,13 @@ fun RecipesScreen(
 
                             // Coffee Slider
                             Text(
-                                text = "Adjust Coffee: ${calcCoffeeGrams.toInt()}g",
+                                text = "Adjust Coffee: ${calcCoffeeGrams.toInt()}g (or push dose above)",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Slider(
-                                value = calcCoffeeGrams.toFloat(),
+                                value = calcCoffeeGrams.toFloat().coerceIn(10f, 60f),
                                 onValueChange = { calcCoffeeGrams = it.toDouble() },
                                 valueRange = 10f..60f,
                                 steps = 50,
@@ -323,6 +368,93 @@ fun RecipesScreen(
                     fontWeight = FontWeight.Black
                 )
             }
+        }
+
+        // Dialog to manually enter coffee dose without using the slider bar
+        if (showCoffeeDoseDialog) {
+            AlertDialog(
+                onDismissRequest = { showCoffeeDoseDialog = false },
+                title = {
+                    Text(
+                        text = "Enter Coffee Dose",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Black
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Text(
+                            text = "Enter the exact coffee dose in grams so you don't need to use the slider bar:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedTextField(
+                            value = doseInputText,
+                            onValueChange = { doseInputText = it },
+                            label = { Text("Coffee Dose") },
+                            trailingIcon = { Text("g", modifier = Modifier.padding(end = 12.dp), fontWeight = FontWeight.Bold) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("input_coffee_dose_field")
+                        )
+
+                        Text(
+                            text = "Quick Presets",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            listOf(12.0, 15.0, 18.0, 20.0, 24.0, 30.0).forEach { preset ->
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            doseInputText = if (preset % 1.0 == 0.0) preset.toInt().toString() else preset.toString()
+                                        }
+                                ) {
+                                    Text(
+                                        text = "${preset.toInt()}g",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val parsed = doseInputText.trim().replace(',', '.').toDoubleOrNull()
+                            if (parsed != null && parsed > 0) {
+                                calcCoffeeGrams = parsed.coerceIn(1.0, 500.0)
+                            }
+                            showCoffeeDoseDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.testTag("btn_save_dose")
+                    ) {
+                        Text("Set Dose", fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showCoffeeDoseDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
@@ -609,19 +741,7 @@ fun RecipeCard(
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Timer button
-                    FilledTonalButton(
-                        onClick = onStartTimer,
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                        modifier = Modifier.testTag("btn_brew_timer_${recipe.id}")
-                    ) {
-                        Icon(Icons.Default.Timer, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Timer", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
-                    }
-
-                    // Log Cup button
+                    // Log Brew button (switched to 1st position)
                     Button(
                         onClick = onOpenLogSheet,
                         shape = RoundedCornerShape(12.dp),
@@ -634,7 +754,19 @@ fun RecipeCard(
                     ) {
                         Icon(Icons.Default.Coffee, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Log Cup", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
+                        Text("Log Brew", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
+                    }
+
+                    // Pour Timer button (switched to 2nd position)
+                    FilledTonalButton(
+                        onClick = onStartTimer,
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                        modifier = Modifier.testTag("btn_brew_timer_${recipe.id}")
+                    ) {
+                        Icon(Icons.Default.Timer, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Pour Timer", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
                     }
 
                     if (!recipe.isPreset) {

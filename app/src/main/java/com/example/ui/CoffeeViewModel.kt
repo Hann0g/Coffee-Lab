@@ -100,6 +100,8 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
     private val _timerElapsedSeconds = MutableStateFlow(0)
     private val _timerRecipe = MutableStateFlow<CoffeeRecipe?>(null)
 
+    val themeUnlockEvent = MutableStateFlow<AppThemeColor?>(null)
+
     val uiState: StateFlow<CoffeeUiState>
 
     init {
@@ -139,6 +141,7 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
             val stats = calculateStats(brews, bags)
             val recipeRatings = calculateRecipeRatings(brews)
             val filteredBrews = processFilteredBrews(brews, filterRating, sortOption)
+            val safeTheme = if (themeColor.isUnlocked(stats.totalBrews)) themeColor else AppThemeColor.MILKY_COFFEE
 
             CoffeeUiState(
                 brews = brews,
@@ -150,7 +153,7 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
                 filterRating = filterRating,
                 sortOption = sortOption,
                 stats = stats,
-                themeColor = themeColor,
+                themeColor = safeTheme,
                 timerRunning = running,
                 timerElapsedSeconds = elapsed,
                 timerRecipe = timerRec,
@@ -262,6 +265,7 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
         bagId: Long? = null
     ) {
         viewModelScope.launch {
+            val currentTotal = uiState.value.stats.totalBrews
             val brew = CoffeeBrew(
                 recipeName = recipeName,
                 coffeeGrams = coffeeGrams,
@@ -277,11 +281,13 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
                 bagId = bagId
             )
             repository.logBrew(brew)
+            checkThemeUnlockMilestone(currentTotal + 1)
         }
     }
 
     fun quickLogPreset(recipe: CoffeeRecipe) {
         viewModelScope.launch {
+            val currentTotal = uiState.value.stats.totalBrews
             val activeBag = repository.getActiveBeanBag()
             val brew = CoffeeBrew(
                 recipeName = recipe.name,
@@ -298,6 +304,7 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
                 bagId = activeBag?.id
             )
             repository.logBrew(brew)
+            checkThemeUnlockMilestone(currentTotal + 1)
         }
     }
 
@@ -450,9 +457,35 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun setThemeColor(color: AppThemeColor) {
+    fun seekTimer(seconds: Int) {
+        _timerElapsedSeconds.value = seconds.coerceAtLeast(0)
+    }
+
+    fun clearThemeUnlockEvent() {
+        themeUnlockEvent.value = null
+    }
+
+    private fun checkThemeUnlockMilestone(newTotal: Int) {
+        val unlocked = when (newTotal) {
+            1 -> AppThemeColor.MATCHA_GREEN
+            10 -> AppThemeColor.ESPRESSO_AMBER
+            30 -> AppThemeColor.BERRY_ROASTER
+            50 -> AppThemeColor.NORDIC_SLATE
+            else -> null
+        }
+        if (unlocked != null) {
+            themeUnlockEvent.value = unlocked
+        }
+    }
+
+    fun setThemeColor(color: AppThemeColor): Boolean {
+        val total = uiState.value.stats.totalBrews
+        if (!color.isUnlocked(total)) {
+            return false
+        }
         _themeColor.value = color
         prefs.edit().putString("pref_theme_color", color.id).apply()
+        return true
     }
 
     private fun formatTime(totalSeconds: Int): String {
