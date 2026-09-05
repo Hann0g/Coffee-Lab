@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import com.example.ui.theme.instagramBounce
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.BeanBag
@@ -363,7 +364,7 @@ fun StatsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .clickable { onOpenScanBag() }
+                        .instagramBounce(scaleDown = 0.96f) { onOpenScanBag() }
                         .testTag("btn_scan_bag_inventory_banner")
                 ) {
                     Row(
@@ -445,7 +446,8 @@ fun StatsScreen(
                     bag = bag,
                     onToggleActive = { onToggleActiveBag(bag) },
                     onEditWeight = { onOpenEditBeanWeight(bag) },
-                    onDelete = { onDeleteBeanBag(bag.id) }
+                    onDelete = { onDeleteBeanBag(bag.id) },
+                    modifier = Modifier.animateItem()
                 )
             }
         }
@@ -463,7 +465,9 @@ fun StatsScreen(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 shape = RoundedCornerShape(18.dp),
-                modifier = Modifier.testTag("fab_scan_bag")
+                modifier = Modifier
+                    .instagramBounce(scaleDown = 0.92f) { onOpenScanBag() }
+                    .testTag("fab_scan_bag")
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),
@@ -484,7 +488,9 @@ fun StatsScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(18.dp),
-                modifier = Modifier.testTag("fab_add_bean_bag")
+                modifier = Modifier
+                    .instagramBounce(scaleDown = 0.92f) { onOpenAddBeanBag() }
+                    .testTag("fab_add_bean_bag")
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),
@@ -559,7 +565,8 @@ fun BeanBagCard(
     bag: BeanBag,
     onToggleActive: () -> Unit,
     onEditWeight: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -567,7 +574,7 @@ fun BeanBagCard(
             containerColor = if (bag.isActive) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ),
         border = BorderStroke(1.dp, if (bag.isActive) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier

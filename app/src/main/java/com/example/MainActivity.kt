@@ -4,7 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.graphics.graphicsLayer
+import com.example.ui.theme.instagramBounce
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -141,17 +154,34 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                         Triple(CoffeeTab.STATS, "Beans & Stats", Icons.Default.BarChart)
                     ).forEach { (tab, label, icon) ->
                         val isSelected = uiState.currentTab == tab
+
+                        val tabBgColor by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+                            label = "tab_bg"
+                        )
+                        val tabBorderColor by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
+                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+                            label = "tab_border"
+                        )
+                        val iconScale by animateFloatAsState(
+                            targetValue = if (isSelected) 1.15f else 1f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessMediumLow
+                            ),
+                            label = "tab_icon_scale"
+                        )
+
                         Surface(
                             shape = RoundedCornerShape(14.dp),
-                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                            border = BorderStroke(
-                                1.dp,
-                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
-                            ),
+                            color = tabBgColor,
+                            border = BorderStroke(1.dp, tabBorderColor),
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
-                                .clickable { viewModel.setTab(tab) }
+                                .instagramBounce(scaleDown = 0.94f) { viewModel.setTab(tab) }
                                 .testTag("tab_${tab.name.lowercase()}")
                         ) {
                             Row(
@@ -162,7 +192,12 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                                 Icon(
                                     imageVector = icon,
                                     contentDescription = label,
-                                    modifier = Modifier.size(16.dp),
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .graphicsLayer {
+                                            scaleX = iconScale
+                                            scaleY = iconScale
+                                        },
                                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -185,7 +220,29 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                 .padding(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
-            Crossfade(targetState = uiState.currentTab, label = "tab_crossfade") { tab ->
+            AnimatedContent(
+                targetState = uiState.currentTab,
+                transitionSpec = {
+                    val isForward = targetState.ordinal >= initialState.ordinal
+                    val slideOffset = { fullWidth: Int -> if (isForward) fullWidth / 4 else -fullWidth / 4 }
+                    val exitOffset = { fullWidth: Int -> if (isForward) -fullWidth / 4 else fullWidth / 4 }
+
+                    (slideInHorizontally(
+                        animationSpec = spring(dampingRatio = 0.85f, stiffness = 420f),
+                        initialOffsetX = slideOffset
+                    ) + fadeIn(
+                        animationSpec = spring(dampingRatio = 0.9f, stiffness = 450f)
+                    )).togetherWith(
+                        slideOutHorizontally(
+                            animationSpec = spring(dampingRatio = 0.85f, stiffness = 420f),
+                            targetOffsetX = exitOffset
+                        ) + fadeOut(
+                            animationSpec = spring(dampingRatio = 0.9f, stiffness = 450f)
+                        )
+                    ).using(SizeTransform(clip = false))
+                },
+                label = "instagram_tab_transition"
+            ) { tab ->
                 when (tab) {
                     CoffeeTab.LOG -> {
                         LogScreen(

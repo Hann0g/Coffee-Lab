@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -61,6 +63,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -81,8 +84,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import com.example.ui.theme.instagramBounce
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.data.CoffeeBagScannerService
 import com.example.data.ScannedCoffeeBag
 import kotlinx.coroutines.delay
@@ -144,31 +149,50 @@ fun ScanCoffeeBagSheet(
         }
     }
 
-    fun applyPreset(preset: ScannedCoffeeBag) {
-        isScanning = true
-        hasResult = false
-        scanStatusMessage = "Analyzing ${preset.name} label..."
-
-        scope.launch {
-            delay(500)
-            name = preset.name
-            roaster = preset.roaster
-            roastLevel = preset.roastLevel
-            roastDate = preset.roastDate
-            weightGramsStr = preset.weightGrams.toInt().toString()
-            tastingNotes = preset.tastingNotes
-            detectedSummary = preset.detectedSummary
-            isScanning = false
-            hasResult = true
-        }
-    }
-
     // Camera launcher
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap: Bitmap? ->
         if (bitmap != null) {
             processBitmap(bitmap)
+        }
+    }
+
+    var showPermissionRationale by remember { mutableStateOf(false) }
+    var cameraErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Camera permission request launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            showPermissionRationale = false
+            cameraErrorMessage = null
+            try {
+                takePictureLauncher.launch(null)
+            } catch (e: Exception) {
+                cameraErrorMessage = "Camera app could not be launched on this device: ${e.localizedMessage ?: "Unknown error"}"
+            }
+        } else {
+            showPermissionRationale = true
+        }
+    }
+
+    fun launchCameraWithPermission() {
+        cameraErrorMessage = null
+        val permissionStatus = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        )
+        if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+            showPermissionRationale = false
+            try {
+                takePictureLauncher.launch(null)
+            } catch (e: Exception) {
+                cameraErrorMessage = "Camera app could not be launched on this device: ${e.localizedMessage ?: "Unknown error"}"
+            }
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -315,7 +339,7 @@ fun ScanCoffeeBagSheet(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Button(
-                                onClick = { takePictureLauncher.launch(null) },
+                                onClick = { launchCameraWithPermission() },
                                 shape = RoundedCornerShape(14.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
@@ -323,6 +347,7 @@ fun ScanCoffeeBagSheet(
                                 ),
                                 modifier = Modifier
                                     .weight(1f)
+                                    .instagramBounce(scaleDown = 0.95f) { launchCameraWithPermission() }
                                     .testTag("btn_take_photo")
                             ) {
                                 Icon(
@@ -344,6 +369,11 @@ fun ScanCoffeeBagSheet(
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
                                 modifier = Modifier
                                     .weight(1f)
+                                    .instagramBounce(scaleDown = 0.95f) {
+                                        pickPhotoLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    }
                                     .testTag("btn_pick_photo")
                             ) {
                                 Icon(
@@ -355,91 +385,87 @@ fun ScanCoffeeBagSheet(
                                 Text("Upload", fontWeight = FontWeight.Bold)
                             }
                         }
-                    }
-                }
 
-                // Quick Demo Coffee Bags (1-tap testing in browser preview/emulator)
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = "OR CHOOSE A DEMO BAG LABEL",
-                            style = MaterialTheme.typography.labelSmall,
-                            letterSpacing = 1.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        CoffeeBagScannerService.sampleCoffeeBags.forEach { sample ->
+                        // Camera Permission Rationale Banner
+                        AnimatedVisibility(visible = showPermissionRationale) {
                             Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .clickable { applyPreset(sample) }
-                                    .testTag("sample_bag_${sample.name.replace(" ", "_")}")
+                                    .padding(top = 10.dp)
+                                    .testTag("banner_camera_permission_rationale")
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                Column(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.primaryContainer,
-                                            modifier = Modifier.size(34.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Coffee,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.padding(8.dp)
-                                            )
-                                        }
-
-                                        Column {
-                                            Text(
-                                                text = sample.name,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                            Text(
-                                                text = "${sample.roaster} • ${sample.weightGrams.toInt()}g • ${sample.roastLevel} Roast",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CameraAlt,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.size(18.dp)
+                                        )
                                         Text(
-                                            text = "Scan",
-                                            style = MaterialTheme.typography.labelSmall,
+                                            text = "Camera Permission Required",
+                                            style = MaterialTheme.typography.labelMedium,
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            color = MaterialTheme.colorScheme.onErrorContainer
                                         )
                                     }
+                                    Text(
+                                        text = "Camera access is needed to photograph coffee bag labels directly. You can grant access or upload an image from your device gallery.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End
+                                    ) {
+                                        TextButton(onClick = { launchCameraWithPermission() }) {
+                                            Text(
+                                                text = "Grant Permission",
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Camera Launch Error Banner
+                        AnimatedVisibility(visible = cameraErrorMessage != null) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = cameraErrorMessage ?: "",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.weight(1f)
+                                    )
                                 }
                             }
                         }
@@ -829,6 +855,21 @@ fun ScanCoffeeBagSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
+                            .instagramBounce(scaleDown = 0.96f) {
+                                val weight = weightGramsStr.toDoubleOrNull() ?: 250.0
+                                if (name.isNotBlank()) {
+                                    onSaveBag(
+                                        name.trim(),
+                                        roaster.trim(),
+                                        roastLevel,
+                                        roastDate.trim().ifBlank { "Fresh" },
+                                        weight,
+                                        weight,
+                                        true
+                                    )
+                                    onDismiss()
+                                }
+                            }
                             .testTag("btn_save_scanned_bag")
                     ) {
                         Icon(

@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import com.example.ui.theme.instagramBounce
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.BeanBag
@@ -140,7 +141,7 @@ fun LogScreen(
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .clickable { onOpenLogSheet(null) }
+                                .instagramBounce(scaleDown = 0.94f) { onOpenLogSheet(null) }
                                 .testTag("btn_log_brew_header")
                         ) {
                             Row(
@@ -300,7 +301,7 @@ fun LogScreen(
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(12.dp))
-                                        .clickable { onQuickLog(recipe) }
+                                        .instagramBounce(scaleDown = 0.94f) { onQuickLog(recipe) }
                                         .testTag("quick_brew_${recipe.id}")
                                 ) {
                                     Row(
@@ -487,11 +488,12 @@ fun LogScreen(
                     }
                 }
             } else {
-                // List of Brew Items
+                // List of Brew Items with smooth Instagram-style spring animation
                 items(brews, key = { it.id }) { brew ->
                     BrewCard(
                         brew = brew,
-                        onDelete = { onDeleteBrew(brew.id) }
+                        onDelete = { onDeleteBrew(brew.id) },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -512,6 +514,13 @@ fun LogScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp)
+                .instagramBounce(scaleDown = 0.92f) {
+                    val pourOverRecipe = recipes.firstOrNull { it.method.equals("Pour Over", ignoreCase = true) }
+                        ?: recipes.firstOrNull()
+                    if (pourOverRecipe != null) {
+                        onOpenTimer(pourOverRecipe)
+                    }
+                }
                 .testTag("fab_pour_timer")
         ) {
             Row(
@@ -546,7 +555,7 @@ fun FilterChip(
         border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .clickable { onClick() }
+            .instagramBounce(scaleDown = 0.94f) { onClick() }
     ) {
         Text(
             text = label,
@@ -561,7 +570,8 @@ fun FilterChip(
 @Composable
 fun BrewCard(
     brew: CoffeeBrew,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val timeFormatter = SimpleDateFormat("h:mm a", Locale.getDefault())
     val dateFormatter = SimpleDateFormat("MMM d", Locale.getDefault())
@@ -574,7 +584,7 @@ fun BrewCard(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .testTag("brew_card_${brew.id}")
     ) {

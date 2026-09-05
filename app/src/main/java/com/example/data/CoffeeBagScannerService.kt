@@ -192,55 +192,6 @@ object CoffeeBagScannerService {
         )
     }
 
-    /**
-     * Preconfigured demo sample coffee bags for instantaneous testing in browser preview.
-     */
-    val sampleCoffeeBags = listOf(
-        ScannedCoffeeBag(
-            name = "Southern Weather",
-            roaster = "Onyx Coffee Lab",
-            roastLevel = "Medium",
-            roastDate = "Aug 28, 2026",
-            weightGrams = 300.0,
-            tastingNotes = "Milk Chocolate, Plum, Candied Walnuts",
-            process = "Washed & Natural Blend",
-            detectedSummary = "Onyx Coffee Lab • Colombia & Ethiopia • 300g",
-            isAiDetected = true
-        ),
-        ScannedCoffeeBag(
-            name = "Sweetshop Blend",
-            roaster = "Square Mile Coffee",
-            roastLevel = "Light",
-            roastDate = "Aug 25, 2026",
-            weightGrams = 250.0,
-            tastingNotes = "Raspberry, White Peach, Floral Honey",
-            process = "Washed",
-            detectedSummary = "Square Mile • Ethiopia & Guatemala • 250g",
-            isAiDetected = true
-        ),
-        ScannedCoffeeBag(
-            name = "Pink Bourbon Huila",
-            roaster = "Sey Coffee",
-            roastLevel = "Light",
-            roastDate = "Aug 22, 2026",
-            weightGrams = 250.0,
-            tastingNotes = "Pink Grapefruit, Jasmine, Red Currant",
-            process = "Washed",
-            detectedSummary = "Sey Coffee • Colombia Huila • 250g",
-            isAiDetected = true
-        ),
-        ScannedCoffeeBag(
-            name = "Bella Donovan",
-            roaster = "Blue Bottle Coffee",
-            roastLevel = "Dark",
-            roastDate = "Aug 30, 2026",
-            weightGrams = 340.0,
-            tastingNotes = "Dark Chocolate, Molasses, Ripe Berry",
-            process = "Moka Java Style",
-            detectedSummary = "Blue Bottle • 12 oz (340g) • Dark Roast",
-            isAiDetected = true
-        )
-    )
 
     private fun scaleDownBitmap(bitmap: Bitmap, maxDimension: Int): Bitmap {
         val width = bitmap.width

@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import com.example.ui.theme.instagramBounce
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -332,7 +333,7 @@ fun RecipesScreen(
                 }
             }
 
-            // Recipe items
+            // Recipe items with smooth spring animation
             items(recipes, key = { it.id }) { recipe ->
                 val ratingSummary = recipeRatings[recipe.name]
                 RecipeCard(
@@ -340,7 +341,8 @@ fun RecipesScreen(
                     ratingSummary = ratingSummary,
                     onStartTimer = { onStartTimer(recipe) },
                     onOpenLogSheet = { onOpenLogSheet(recipe) },
-                    onDelete = { onDeleteRecipe(recipe.id) }
+                    onDelete = { onDeleteRecipe(recipe.id) },
+                    modifier = Modifier.animateItem()
                 )
             }
         }
@@ -354,6 +356,7 @@ fun RecipesScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp)
+                .instagramBounce(scaleDown = 0.92f) { onOpenAddRecipeDialog() }
                 .testTag("fab_add_recipe")
         ) {
             Row(
@@ -465,7 +468,8 @@ fun RecipeCard(
     ratingSummary: RecipeRatingSummary? = null,
     onStartTimer: () -> Unit,
     onOpenLogSheet: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -477,7 +481,7 @@ fun RecipeCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .testTag("recipe_card_${recipe.id}")
     ) {
@@ -750,7 +754,9 @@ fun RecipeCard(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
-                        modifier = Modifier.testTag("btn_log_recipe_${recipe.id}")
+                        modifier = Modifier
+                            .instagramBounce(scaleDown = 0.94f) { onOpenLogSheet() }
+                            .testTag("btn_log_recipe_${recipe.id}")
                     ) {
                         Icon(Icons.Default.Coffee, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
@@ -762,7 +768,9 @@ fun RecipeCard(
                         onClick = onStartTimer,
                         shape = RoundedCornerShape(12.dp),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                        modifier = Modifier.testTag("btn_brew_timer_${recipe.id}")
+                        modifier = Modifier
+                            .instagramBounce(scaleDown = 0.94f) { onStartTimer() }
+                            .testTag("btn_brew_timer_${recipe.id}")
                     ) {
                         Icon(Icons.Default.Timer, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
