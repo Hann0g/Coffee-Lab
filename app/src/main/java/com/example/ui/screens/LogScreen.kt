@@ -21,19 +21,25 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Scale
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,7 +47,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,6 +78,7 @@ fun LogScreen(
     onSetFilterRating: (Int) -> Unit,
     onSetSortOption: (LogSortOption) -> Unit,
     onOpenEditBeanWeight: (BeanBag) -> Unit,
+    onOpenScanBag: () -> Unit = {},
     onOpenLogSheet: (CoffeeRecipe?) -> Unit,
     onOpenTimer: (CoffeeRecipe) -> Unit,
     onQuickLog: (CoffeeRecipe) -> Unit,
@@ -76,250 +86,238 @@ fun LogScreen(
     onOpenSettings: () -> Unit = {}
 ) {
     val todayDateStr = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(Date())
+    var sortMenuExpanded by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Header summary with Bold Typography hierarchy
+            // Calm, uncluttered Header
             item {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = todayDateStr.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            letterSpacing = 1.5.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        // Theme settings button
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable { onOpenSettings() }
-                                .testTag("btn_open_settings")
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Palette,
-                                    contentDescription = "Theme Color Settings",
-                                    modifier = Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = "Theme",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
                         Text(
                             text = "Daily Brews",
-                            style = MaterialTheme.typography.headlineLarge,
+                            style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Black,
                             color = MaterialTheme.colorScheme.onBackground
                         )
+                        Text(
+                            text = "$todayDateStr • ${stats.todayBrews} cups today",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Theme settings button
+                        IconButton(
+                            onClick = onOpenSettings,
+                            modifier = Modifier
+                                .size(38.dp)
+                                .testTag("btn_open_settings")
                         ) {
-                            // Quick Log Brew action button
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { onOpenLogSheet(null) }
-                                    .testTag("btn_log_brew_header")
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Add,
-                                        contentDescription = "Log Brew",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Text(
-                                        text = "Log Brew",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                }
-                            }
+                            Icon(
+                                Icons.Default.Palette,
+                                contentDescription = "Theme Color Settings",
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
 
-                            Surface(
-                                shape = RoundedCornerShape(20.dp),
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        // Log Brew primary button
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onOpenLogSheet(null) }
+                                .testTag("btn_log_brew_header")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Coffee,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier.size(15.dp)
-                                    )
-                                    Text(
-                                        text = "${stats.todayBrews} today",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                }
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = "Log Brew",
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "Log Brew",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // Active Bean Bag Banner if available
+            // Slim Active Bean Capsule Banner (or Scan Prompt)
             if (activeBeanBag != null) {
                 item {
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onOpenEditBeanWeight(activeBeanBag) }
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { onOpenEditBeanWeight(activeBeanBag) },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Scale,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "${activeBeanBag.name} • ${activeBeanBag.remainingWeightGrams.toInt()}g left",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                IconButton(
+                                    onClick = { onOpenEditBeanWeight(activeBeanBag) },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = "Edit Weight",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                IconButton(
+                                    onClick = onOpenScanBag,
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.CameraAlt,
+                                        contentDescription = "Scan New Bag",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onOpenScanBag() }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer
-                                ) {
-                                    Icon(
-                                        Icons.Default.Scale,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier
-                                            .padding(8.dp)
-                                            .size(18.dp)
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = "ACTIVE BEANS",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontSize = 10.sp,
-                                        letterSpacing = 1.sp,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Black
-                                    )
-                                    Text(
-                                        text = "${activeBeanBag.name} (${activeBeanBag.remainingWeightGrams.toInt()}g left)",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .clickable { onOpenEditBeanWeight(activeBeanBag) }
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit Weight",
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .size(18.dp),
-                                    tint = MaterialTheme.colorScheme.primary
+                                    Icons.Default.CameraAlt,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "No active beans • Scan coffee bag to add",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            Text(
+                                text = "Scan",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
             }
 
-            // Quick Brew Bar (1-tap to log favorite recipe)
+            // Quick Brew Bar (1-tap log favorite recipes)
             if (recipes.isNotEmpty()) {
                 item {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             text = "QUICK BREW (1-TAP LOG)",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            letterSpacing = 1.sp
+                            letterSpacing = 1.sp,
+                            fontSize = 10.sp
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(vertical = 2.dp)
                         ) {
-                            items(recipes.take(5)) { recipe ->
+                            items(recipes.take(4)) { recipe ->
                                 Surface(
-                                    shape = RoundedCornerShape(14.dp),
+                                    shape = RoundedCornerShape(12.dp),
                                     color = MaterialTheme.colorScheme.surfaceVariant,
-                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(14.dp))
+                                        .clip(RoundedCornerShape(12.dp))
                                         .clickable { onQuickLog(recipe) }
                                         .testTag("quick_brew_${recipe.id}")
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         Text(
                                             text = "+ ${recipe.name.split(" ").firstOrNull() ?: recipe.name}",
                                             style = MaterialTheme.typography.labelMedium,
-                                            fontWeight = FontWeight.Black,
+                                            fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         Text(
                                             text = "${recipe.defaultCoffeeGrams.toInt()}g",
                                             style = MaterialTheme.typography.bodySmall,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.Medium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
@@ -330,83 +328,119 @@ fun LogScreen(
                 }
             }
 
-            // Filter & Sort Toolbar
+            // Habit Insight Glance (if brews exist)
+            if (stats.totalBrews > 0) {
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Schedule,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "Habit: Brews usually ${stats.habits.usualTimeOfDay.lowercase()} • Avg %.1f cups/day".format(Locale.US, stats.habits.avgBrewsPerDay),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Streamlined Filter & Sort Row
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Rating Filter Chips
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "BREW HISTORY",
-                            style = MaterialTheme.typography.labelSmall,
-                            letterSpacing = 1.2.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        FilterChip(
+                            label = "All",
+                            isSelected = filterRating == 0,
+                            onClick = { onSetFilterRating(0) }
                         )
-                        Text(
-                            text = "${brews.size} brews",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        FilterChip(
+                            label = "★ 5",
+                            isSelected = filterRating == 5,
+                            onClick = { onSetFilterRating(if (filterRating == 5) 0 else 5) }
+                        )
+                        FilterChip(
+                            label = "★ 4+",
+                            isSelected = filterRating == 4,
+                            onClick = { onSetFilterRating(if (filterRating == 4) 0 else 4) }
                         )
                     }
 
-                    // Rating Filter Chips
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        contentPadding = PaddingValues(vertical = 2.dp)
-                    ) {
-                        item {
-                            FilterChip(
-                                label = "All",
-                                isSelected = filterRating == 0,
-                                onClick = { onSetFilterRating(0) }
-                            )
-                        }
-                        item {
-                            FilterChip(
-                                label = "★ 5 Only",
-                                isSelected = filterRating == 5,
-                                onClick = { onSetFilterRating(if (filterRating == 5) 0 else 5) }
-                            )
-                        }
-                        item {
-                            FilterChip(
-                                label = "★ 4+",
-                                isSelected = filterRating == 4,
-                                onClick = { onSetFilterRating(if (filterRating == 4) 0 else 4) }
-                            )
-                        }
-                        item {
-                            FilterChip(
-                                label = "★ 3+",
-                                isSelected = filterRating == 3,
-                                onClick = { onSetFilterRating(if (filterRating == 3) 0 else 3) }
-                            )
-                        }
-                    }
-
-                    // Sort Chips
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        contentPadding = PaddingValues(vertical = 2.dp)
-                    ) {
-                        items(LogSortOption.entries) { option ->
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (sortOption == option) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                border = BorderStroke(1.dp, if (sortOption == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onSetSortOption(option) }
+                    // Compact Sort Selector Dropdown
+                    Box {
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { sortMenuExpanded = true }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
+                                Icon(
+                                    Icons.Default.Sort,
+                                    contentDescription = "Sort Brews",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                                 Text(
-                                    text = option.displayName,
+                                    text = sortOption.displayName,
                                     style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = if (sortOption == option) FontWeight.Black else FontWeight.Medium,
-                                    color = if (sortOption == option) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Icon(
+                                    Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = sortMenuExpanded,
+                            onDismissRequest = { sortMenuExpanded = false }
+                        ) {
+                            LogSortOption.entries.forEach { option ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = option.displayName,
+                                            fontWeight = if (sortOption == option) FontWeight.Black else FontWeight.Normal,
+                                            color = if (sortOption == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        onSetSortOption(option)
+                                        sortMenuExpanded = false
+                                    }
                                 )
                             }
                         }

@@ -71,6 +71,7 @@ import com.example.ui.components.AddRecipeDialog
 import com.example.ui.components.BrewTimerSheet
 import com.example.ui.components.EditBeanWeightDialog
 import com.example.ui.components.LogBrewSheet
+import com.example.ui.components.ScanCoffeeBagSheet
 import com.example.ui.components.SettingsDialog
 import com.example.ui.screens.LogScreen
 import com.example.ui.screens.RecipesScreen
@@ -105,11 +106,13 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
     var showTimerSheet by remember { mutableStateOf(false) }
     var showAddRecipeDialog by remember { mutableStateOf(false) }
     var showAddBeanBagDialog by remember { mutableStateOf(false) }
+    var showScanCoffeeBagSheet by remember { mutableStateOf(false) }
     var selectedBeanBagForEdit by remember { mutableStateOf<BeanBag?>(null) }
     var showSettingsDialog by remember { mutableStateOf(false) }
 
     val logSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val timerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scanSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val activeBeanBag = uiState.beanBags.firstOrNull { it.isActive }
 
@@ -195,6 +198,7 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                             onSetFilterRating = { viewModel.setFilterRating(it) },
                             onSetSortOption = { viewModel.setSortOption(it) },
                             onOpenEditBeanWeight = { bag -> selectedBeanBagForEdit = bag },
+                            onOpenScanBag = { showScanCoffeeBagSheet = true },
                             onOpenLogSheet = { recipe ->
                                 selectedRecipeForLog = recipe
                                 showLogSheet = true
@@ -237,6 +241,7 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                             stats = uiState.stats,
                             beanBags = uiState.beanBags,
                             onOpenAddBeanBag = { showAddBeanBagDialog = true },
+                            onOpenScanBag = { showScanCoffeeBagSheet = true },
                             onOpenEditBeanWeight = { bag -> selectedBeanBagForEdit = bag },
                             onToggleActiveBag = { bag ->
                                 viewModel.saveBeanBag(
@@ -344,6 +349,10 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
     if (showAddBeanBagDialog) {
         AddBeanBagDialog(
             onDismiss = { showAddBeanBagDialog = false },
+            onOpenScanner = {
+                showAddBeanBagDialog = false
+                showScanCoffeeBagSheet = true
+            },
             onSave = { name, roaster, roastLevel, roastDate, initialWeight, remainingWeight, isActive ->
                 viewModel.saveBeanBag(
                     name = name,
@@ -357,6 +366,29 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
                 showAddBeanBagDialog = false
                 scope.launch {
                     snackbarHostState.showSnackbar("Added $name to Bean Inventory")
+                }
+            }
+        )
+    }
+
+    // Scan Coffee Bag Sheet (AI Camera Scanner)
+    if (showScanCoffeeBagSheet) {
+        ScanCoffeeBagSheet(
+            sheetState = scanSheetState,
+            onDismiss = { showScanCoffeeBagSheet = false },
+            onSaveBag = { name, roaster, roastLevel, roastDate, initialWeight, remainingWeight, isActive ->
+                viewModel.saveBeanBag(
+                    name = name,
+                    roaster = roaster,
+                    roastLevel = roastLevel,
+                    roastDate = roastDate,
+                    initialWeightGrams = initialWeight,
+                    remainingWeightGrams = remainingWeight,
+                    isActive = isActive
+                )
+                showScanCoffeeBagSheet = false
+                scope.launch {
+                    snackbarHostState.showSnackbar("Added $name to Bean Inventory from scan!")
                 }
             }
         )

@@ -18,7 +18,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 enum class CoffeeTab {
     LOG,
@@ -39,6 +41,38 @@ data class RecipeRatingSummary(
     val count: Int = 0
 )
 
+data class DayBrewStat(
+    val dateStr: String,
+    val dayLabel: String,
+    val count: Int,
+    val grams: Double,
+    val isToday: Boolean = false
+)
+
+data class TimePeriodStat(
+    val periodName: String,
+    val timeRange: String,
+    val count: Int,
+    val percentage: Int
+)
+
+data class HourlyBrewBucket(
+    val label: String,
+    val count: Int,
+    val percentage: Int
+)
+
+data class CoffeeHabits(
+    val dailyCounts: List<DayBrewStat> = emptyList(),
+    val avgBrewsPerDay: Double = 0.0,
+    val peakDayLabel: String = "—",
+    val maxBrewsInDay: Int = 0,
+    val timePeriods: List<TimePeriodStat> = emptyList(),
+    val usualTimeOfDay: String = "Morning (7:00 AM – 9:30 AM)",
+    val peakHourWindow: String = "8:00 AM – 9:00 AM",
+    val hourlyBuckets: List<HourlyBrewBucket> = emptyList()
+)
+
 data class CoffeeStats(
     val totalBrews: Int = 0,
     val todayBrews: Int = 0,
@@ -47,7 +81,8 @@ data class CoffeeStats(
     val avgGramsPerCup: Double = 0.0,
     val topRecipe: String = "—",
     val activeBagRemainingGrams: Double? = null,
-    val activeBagName: String? = null
+    val activeBagName: String? = null,
+    val habits: CoffeeHabits = CoffeeHabits()
 )
 
 data class CoffeeUiState(
@@ -226,6 +261,7 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
             .maxByOrNull { it.value }?.key ?: "—"
 
         val activeBag = bags.firstOrNull { it.isActive }
+        val habits = calculateHabits(brews)
 
         return CoffeeStats(
             totalBrews = totalBrews,
@@ -235,8 +271,147 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
             avgGramsPerCup = avgGrams,
             topRecipe = topRecipe,
             activeBagRemainingGrams = activeBag?.remainingWeightGrams,
-            activeBagName = activeBag?.name
+            activeBagName = activeBag?.name,
+            habits = habits
         )
+    }
+
+    private fun calculateHabits(brews: List<CoffeeBrew>): CoffeeHabits {
+        // Last 7 days sequence ending on today
+        val dailyList = (6 downTo 0).map { daysAgo ->
+            val startCal = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, -daysAgo)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val endCal = Calendar.getInstance().apply {
+                timeInMillis = startCal.timeInMillis
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
+            val startMs = startCal.timeInMillis
+            val endMs = endCal.timeInMillis
+
+            val dayBrews = brews.filter { it.timestamp in startMs until endMs }
+            val dayLabel = SimpleDateFormat("EEE", Locale.US).format(startCal.time)
+            val dateStr = SimpleDateFormat("MMM d", Locale.US).format(startCal.time)
+
+            DayBrewStat(
+                dateStr = dateStr,
+                dayLabel = dayLabel,
+                count = dayBrews.size,
+                grams = dayBrews.sumOf { it.coffeeGrams },
+                isToday = (daysAgo == 0)
+            )
+        }
+
+        val total7DaysBrews = dailyList.sumOf { it.count }
+        val avgPerDay = total7DaysBrews / 7.0
+        val peakDayItem = dailyList.maxByOrNull { it.count }
+        val maxBrews = dailyList.maxOfOrNull { it.count } ?: 0
+
+        if (brews.isEmpty()) {
+            val defaultPeriods = listOf(
+                TimePeriodStat("Morning", "5 AM – 12 PM", 0, 0),
+                TimePeriodStat("Afternoon", "12 PM – 5 PM", 0, 0),
+                TimePeriodStat("Evening", "5 PM – 9 PM", 0, 0),
+                TimePeriodStat("Night", "9 PM – 5 AM", 0, 0)
+            )
+            return CoffeeHabits(
+                dailyCounts = dailyList,
+                avgBrewsPerDay = 0.0,
+                peakDayLabel = "—",
+                maxBrewsInDay = 0,
+                timePeriods = defaultPeriods,
+                usualTimeOfDay = "No brews logged yet",
+                peakHourWindow = "—",
+                hourlyBuckets = emptyList()
+            )
+        }
+
+        // Time of day categorization
+        var morningCount = 0
+        var afternoonCount = 0
+        var eveningCount = 0
+        var nightCount = 0
+
+        val hourCounts = IntArray(24)
+        val cal = Calendar.getInstance()
+
+        for (brew in brews) {
+            cal.timeInMillis = brew.timestamp
+            val hour = cal.get(Calendar.HOUR_OF_DAY) // 0..23
+            hourCounts[hour]++
+
+            when (hour) {
+                in 5..11 -> morningCount++
+                in 12..16 -> afternoonCount++
+                in 17..20 -> eveningCount++
+                else -> nightCount++
+            }
+        }
+
+        val totalBrews = brews.size.coerceAtLeast(1)
+        val morningPct = (morningCount * 100) / totalBrews
+        val afternoonPct = (afternoonCount * 100) / totalBrews
+        val eveningPct = (eveningCount * 100) / totalBrews
+        val nightPct = (nightCount * 100) / totalBrews
+
+        val periods = listOf(
+            TimePeriodStat("Morning", "5 AM – 12 PM", morningCount, morningPct),
+            TimePeriodStat("Afternoon", "12 PM – 5 PM", afternoonCount, afternoonPct),
+            TimePeriodStat("Evening", "5 PM – 9 PM", eveningCount, eveningPct),
+            TimePeriodStat("Night", "9 PM – 5 AM", nightCount, nightPct)
+        )
+
+        val peakHour = hourCounts.indices.maxByOrNull { hourCounts[it] } ?: 8
+        val startHourStr = formatHour(peakHour)
+        val endHourStr = formatHour((peakHour + 1) % 24)
+        val peakHourWindow = "$startHourStr – $endHourStr"
+
+        val maxPeriod = periods.maxByOrNull { it.count }
+        val usualTimeOfDay = if (maxPeriod != null && maxPeriod.count > 0) {
+            "${maxPeriod.periodName} ($peakHourWindow)"
+        } else {
+            "Morning ($peakHourWindow)"
+        }
+
+        val b1 = (6..8).sumOf { hourCounts[it] }
+        val b2 = (9..11).sumOf { hourCounts[it] }
+        val b3 = (12..14).sumOf { hourCounts[it] }
+        val b4 = (15..17).sumOf { hourCounts[it] }
+        val b5 = (18..20).sumOf { hourCounts[it] }
+        val b6 = totalBrews - (b1 + b2 + b3 + b4 + b5)
+
+        val buckets = listOf(
+            HourlyBrewBucket("6a-9a", b1, (b1 * 100) / totalBrews),
+            HourlyBrewBucket("9a-12p", b2, (b2 * 100) / totalBrews),
+            HourlyBrewBucket("12p-3p", b3, (b3 * 100) / totalBrews),
+            HourlyBrewBucket("3p-6p", b4, (b4 * 100) / totalBrews),
+            HourlyBrewBucket("6p-9p", b5, (b5 * 100) / totalBrews),
+            HourlyBrewBucket("Night", b6.coerceAtLeast(0), (b6.coerceAtLeast(0) * 100) / totalBrews)
+        )
+
+        return CoffeeHabits(
+            dailyCounts = dailyList,
+            avgBrewsPerDay = avgPerDay,
+            peakDayLabel = peakDayItem?.dayLabel ?: "—",
+            maxBrewsInDay = maxBrews,
+            timePeriods = periods,
+            usualTimeOfDay = usualTimeOfDay,
+            peakHourWindow = peakHourWindow,
+            hourlyBuckets = buckets
+        )
+    }
+
+    private fun formatHour(hour24: Int): String {
+        return when {
+            hour24 == 0 -> "12 AM"
+            hour24 < 12 -> "$hour24 AM"
+            hour24 == 12 -> "12 PM"
+            else -> "${hour24 - 12} PM"
+        }
     }
 
     fun setTab(tab: CoffeeTab) {

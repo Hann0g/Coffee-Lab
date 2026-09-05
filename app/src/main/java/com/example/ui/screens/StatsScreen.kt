@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,18 +21,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Scale
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -39,6 +51,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +63,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.BeanBag
+import com.example.ui.CoffeeHabits
 import com.example.ui.CoffeeStats
+import com.example.ui.DayBrewStat
 import java.util.Locale
 
 @Composable
@@ -55,6 +73,7 @@ fun StatsScreen(
     stats: CoffeeStats,
     beanBags: List<BeanBag>,
     onOpenAddBeanBag: () -> Unit,
+    onOpenScanBag: () -> Unit = {},
     onOpenEditBeanWeight: (BeanBag) -> Unit,
     onToggleActiveBag: (BeanBag) -> Unit,
     onDeleteBeanBag: (Long) -> Unit,
@@ -172,6 +191,16 @@ fun StatsScreen(
                         )
                     }
                 }
+            }
+
+            // Daily Brews Chart (Last 7 Days)
+            item {
+                DailyBrewsChart(habits = stats.habits)
+            }
+
+            // Time of Day Habit Tracker
+            item {
+                TimeOfDayHabitCard(habits = stats.habits)
             }
 
             // Active Bean Bag Inventory Card
@@ -325,6 +354,70 @@ fun StatsScreen(
                 }
             }
 
+            // Quick Scan Banner for Beans
+            item {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onOpenScanBag() }
+                        .testTag("btn_scan_bag_inventory_banner")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.padding(8.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Scan Coffee Bag Label",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = "Take a photo to auto-fill roaster & grams",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        ) {
+                            Text(
+                                text = "Scan",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             // All Bags list
             item {
                 Row(
@@ -357,28 +450,54 @@ fun StatsScreen(
             }
         }
 
-        // Add Bag FAB
-        FloatingActionButton(
-            onClick = onOpenAddBeanBag,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = RoundedCornerShape(18.dp),
+        // Action FABs: Scan + Manual Add
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(20.dp)
-                .testTag("fab_add_bean_bag")
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            FloatingActionButton(
+                onClick = onOpenScanBag,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.testTag("fab_scan_bag")
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Bag")
-                Text(
-                    text = "Add Bag",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Black
-                )
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(Icons.Default.CameraAlt, contentDescription = "Scan Bag", modifier = Modifier.size(18.dp))
+                    Text(
+                        text = "Scan Bag",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            FloatingActionButton(
+                onClick = onOpenAddBeanBag,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.testTag("fab_add_bean_bag")
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Bag", modifier = Modifier.size(18.dp))
+                    Text(
+                        text = "Add",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Black
+                    )
+                }
             }
         }
     }
@@ -509,6 +628,407 @@ fun BeanBagCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(20.dp)
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DailyBrewsChart(habits: CoffeeHabits) {
+    var selectedDayIndex by remember { mutableStateOf<Int?>(null) }
+    val maxCount = (habits.dailyCounts.maxOfOrNull { it.count } ?: 1).coerceAtLeast(3)
+
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+        modifier = Modifier.fillMaxWidth().testTag("chart_daily_brews")
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.BarChart,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(6.dp).size(16.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "DAILY BREWS",
+                            style = MaterialTheme.typography.labelSmall,
+                            letterSpacing = 1.sp,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Last 7 Days Activity",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                ) {
+                    Text(
+                        text = "%.1f cups/day avg".format(Locale.US, habits.avgBrewsPerDay),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 7-Day Bar Chart
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                habits.dailyCounts.forEachIndexed { index, dayStat ->
+                    val isSelected = selectedDayIndex == index
+                    val isToday = dayStat.isToday
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                selectedDayIndex = if (isSelected) null else index
+                            }
+                            .padding(horizontal = 2.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        // Count text above bar
+                        Text(
+                            text = if (dayStat.count > 0) "${dayStat.count}" else "0",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected || isToday || dayStat.count > 0) FontWeight.Black else FontWeight.Normal,
+                            color = when {
+                                isSelected -> MaterialTheme.colorScheme.primary
+                                dayStat.count > 0 -> MaterialTheme.colorScheme.onSurface
+                                else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Bar
+                        val fraction = (dayStat.count.toFloat() / maxCount).coerceIn(0f, 1f)
+                        val barHeight = (fraction * 74).dp.coerceAtLeast(6.dp)
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(barHeight)
+                                .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 2.dp, bottomEnd = 2.dp))
+                                .background(
+                                    when {
+                                        isSelected -> MaterialTheme.colorScheme.primary
+                                        isToday && dayStat.count > 0 -> MaterialTheme.colorScheme.primary
+                                        dayStat.count > 0 -> MaterialTheme.colorScheme.primary.copy(alpha = 0.65f)
+                                        else -> MaterialTheme.colorScheme.surfaceVariant
+                                    }
+                                )
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Day label (e.g., "Mon")
+                        Text(
+                            text = dayStat.dayLabel.take(3),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            fontWeight = if (isToday || isSelected) FontWeight.Black else FontWeight.Medium,
+                            color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        // Dot indicator for today
+                        if (isToday) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 2.dp)
+                                    .size(4.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+                    }
+                }
+            }
+
+            // Selected Day detail chip
+            AnimatedVisibility(
+                visible = selectedDayIndex != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                selectedDayIndex?.let { idx ->
+                    val day = habits.dailyCounts.getOrNull(idx)
+                    if (day != null) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${day.dayLabel}, ${day.dateStr}${if (day.isToday) " (Today)" else ""}",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = "${day.count} ${if (day.count == 1) "cup" else "cups"} • ${day.grams.toInt()}g coffee",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TimeOfDayHabitCard(habits: CoffeeHabits) {
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+        modifier = Modifier.fillMaxWidth().testTag("card_time_of_day_habits")
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(6.dp).size(16.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "TIME OF DAY HABITS",
+                            style = MaterialTheme.typography.labelSmall,
+                            letterSpacing = 1.sp,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "When You Usually Brew",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Highlight insight banner
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.WbSunny,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "USUAL BREW TIME",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            letterSpacing = 1.sp,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = habits.usualTimeOfDay,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Peak window: ${habits.peakHourWindow}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Time Period breakdown bars
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                habits.timePeriods.forEach { period ->
+                    val icon = when (period.periodName) {
+                        "Morning" -> Icons.Default.WbSunny
+                        "Afternoon" -> Icons.Default.LightMode
+                        "Evening" -> Icons.Default.WbTwilight
+                        else -> Icons.Default.NightsStay
+                    }
+
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "${period.periodName} (${period.timeRange})",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            Text(
+                                text = "${period.count} cups (${period.percentage}%)",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (period.count > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        LinearProgressIndicator(
+                            progress = { (period.percentage / 100f).coerceIn(0f, 1f) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Hourly distribution mini-timeline
+            if (habits.hourlyBuckets.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "HOURLY TIMELINE DISTRIBUTION",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    habits.hourlyBuckets.forEach { bucket ->
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            val bucketHeight = (bucket.percentage / 100f * 20).dp.coerceAtLeast(3.dp)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(bucketHeight)
+                                    .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
+                                    .background(
+                                        if (bucket.count > 0) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = bucket.label,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 8.sp,
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }
