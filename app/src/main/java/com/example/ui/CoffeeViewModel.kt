@@ -95,7 +95,7 @@ data class CoffeeUiState(
     val filterRating: Int = 0, // 0 = all, 5 = 5 stars, 4 = 4+ stars, etc.
     val sortOption: LogSortOption = LogSortOption.NEWEST,
     val stats: CoffeeStats = CoffeeStats(),
-    val themeColor: AppThemeColor = AppThemeColor.MILKY_COFFEE,
+    val themeColor: AppThemeColor = AppThemeColor.PIXEL_JRPG,
     val timerRunning: Boolean = false,
     val timerElapsedSeconds: Int = 0,
     val timerRecipe: CoffeeRecipe? = null,
@@ -129,7 +129,7 @@ class CoffeeViewModel(application: Application) : AndroidViewModel(application) 
     private val _filterRating = MutableStateFlow(0)
     private val _sortOption = MutableStateFlow(LogSortOption.NEWEST)
     private val _themeColor = MutableStateFlow(
-        AppThemeColor.fromId(prefs.getString("pref_theme_color", AppThemeColor.MILKY_COFFEE.id))
+        AppThemeColor.fromId(prefs.getString("pref_theme_color", AppThemeColor.PIXEL_JRPG.id))
     )
     private val _timerRunning = MutableStateFlow(false)
     private val _timerElapsedSeconds = MutableStateFlow(0)

@@ -10,6 +10,22 @@ enum class AppThemeColor(
     val secondaryPreview: Color,
     val requiredCoffees: Int = 0
 ) {
+    PIXEL_JRPG(
+        id = "pixel_jrpg",
+        displayName = "16-Bit Guild (JRPG)",
+        description = "Royal blue tavern HUD & gold pixel borders",
+        previewColor = Color(0xFF101C46),
+        secondaryPreview = Color(0xFFF7C844),
+        requiredCoffees = 0
+    ),
+    TAVERN_PARCHMENT(
+        id = "tavern_parchment",
+        displayName = "Tavern Parchment",
+        description = "Warm quest map with sepia ink & brass",
+        previewColor = Color(0xFFF2E6CE),
+        secondaryPreview = Color(0xFF8C532B),
+        requiredCoffees = 0
+    ),
     MILKY_COFFEE(
         id = "milky_coffee",
         displayName = "Milky Coffee",
@@ -40,7 +56,7 @@ enum class AppThemeColor(
         description = "Fruity origin notes & wild hibiscus",
         previewColor = Color(0xFF8E2A59),
         secondaryPreview = Color(0xFFFDD9E8),
-        requiredCoffees = 30
+        requiredCoffees = 25
     ),
     NORDIC_SLATE(
         id = "nordic_slate",
@@ -48,19 +64,78 @@ enum class AppThemeColor(
         description = "Cold brew & Scandinavian slate",
         previewColor = Color(0xFF285D7C),
         secondaryPreview = Color(0xFFDAEBF5),
-        requiredCoffees = 50
+        requiredCoffees = 40
     );
 
     fun isUnlocked(trackedCoffees: Int): Boolean = trackedCoffees >= requiredCoffees
 
     companion object {
         fun fromId(id: String?): AppThemeColor {
-            return entries.find { it.id == id } ?: MILKY_COFFEE
+            return entries.find { it.id == id } ?: PIXEL_JRPG
         }
     }
 }
 
-// 1. Milky Coffee Theme Palette
+// 0. 16-Bit Pixel Art JRPG Palette (Royal Blue HUD & Treasure Gold)
+val PixelJrpgPrimary = Color(0xFFF7C844)            // 16-bit Gold
+val PixelJrpgOnPrimary = Color(0xFF0D1432)          // Midnight Ink
+val PixelJrpgPrimaryContainer = Color(0xFF1F326E)   // Midnight Navy Inset
+val PixelJrpgOnPrimaryContainer = Color(0xFFFFEFA8) // Soft Gold
+val PixelJrpgSecondary = Color(0xFF38BDF8)          // Mana Cyan
+val PixelJrpgOnSecondary = Color(0xFF082F49)
+val PixelJrpgSecondaryContainer = Color(0xFF193B68)
+val PixelJrpgOnSecondaryContainer = Color(0xFFBAE6FD)
+val PixelJrpgTertiary = Color(0xFFF43F5E)           // Health Potion Crimson
+val PixelJrpgOnTertiary = Color(0xFFFFFFFF)
+val PixelJrpgBackgroundLight = Color(0xFF0F1836)    // Classic JRPG Window Dark Blue
+val PixelJrpgOnBackgroundLight = Color(0xFFF8FAFC)
+val PixelJrpgSurfaceLight = Color(0xFF162554)       // Command Box Blue
+val PixelJrpgOnSurfaceLight = Color(0xFFF8FAFC)
+val PixelJrpgSurfaceVariantLight = Color(0xFF1E3272)
+val PixelJrpgOnSurfaceVariantLight = Color(0xFFCBD5E1)
+val PixelJrpgOutlineLight = Color(0xFFF7C844)       // Gold Pixel Border
+val PixelJrpgOutlineVariantLight = Color(0xFF2E468A)
+
+val PixelJrpgPrimaryDark = Color(0xFFF7C844)
+val PixelJrpgOnPrimaryDark = Color(0xFF0A0F26)
+val PixelJrpgPrimaryContainerDark = Color(0xFF182858)
+val PixelJrpgOnPrimaryContainerDark = Color(0xFFFFEFA8)
+val PixelJrpgSecondaryDark = Color(0xFF38BDF8)
+val PixelJrpgOnSecondaryDark = Color(0xFF082F49)
+val PixelJrpgSecondaryContainerDark = Color(0xFF152F54)
+val PixelJrpgOnSecondaryContainerDark = Color(0xFFBAE6FD)
+val PixelJrpgTertiaryDark = Color(0xFFFB7185)
+val PixelJrpgOnTertiaryDark = Color(0xFF4C0519)
+val PixelJrpgBackgroundDark = Color(0xFF090E22)
+val PixelJrpgOnBackgroundDark = Color(0xFFF1F5F9)
+val PixelJrpgSurfaceDark = Color(0xFF101B40)
+val PixelJrpgOnSurfaceDark = Color(0xFFF1F5F9)
+val PixelJrpgSurfaceVariantDark = Color(0xFF1A2A60)
+val PixelJrpgOnSurfaceVariantDark = Color(0xFF94A3B8)
+val PixelJrpgOutlineDark = Color(0xFFF7C844)
+val PixelJrpgOutlineVariantDark = Color(0xFF253974)
+
+// Tavern Parchment Palette
+val TavernPrimary = Color(0xFF8C4A1F)
+val TavernOnPrimary = Color(0xFFFFFFFF)
+val TavernPrimaryContainer = Color(0xFFEBD8BE)
+val TavernOnPrimaryContainer = Color(0xFF331705)
+val TavernSecondary = Color(0xFF4A6B34)
+val TavernOnSecondary = Color(0xFFFFFFFF)
+val TavernSecondaryContainer = Color(0xFFD8E6CC)
+val TavernOnSecondaryContainer = Color(0xFF18290D)
+val TavernTertiary = Color(0xFFA63A3A)
+val TavernOnTertiary = Color(0xFFFFFFFF)
+val TavernBackgroundLight = Color(0xFFF6EEDD)
+val TavernOnBackgroundLight = Color(0xFF2B1D12)
+val TavernSurfaceLight = Color(0xFFFCF7ED)
+val TavernOnSurfaceLight = Color(0xFF2B1D12)
+val TavernSurfaceVariantLight = Color(0xFFECE0C8)
+val TavernOnSurfaceVariantLight = Color(0xFF544234)
+val TavernOutlineLight = Color(0xFFC4A882)
+val TavernOutlineVariantLight = Color(0xFFDCC8AA)
+
+// Milky Coffee Theme Palette
 val MilkyCoffeePrimary = Color(0xFF704828)
 val MilkyCoffeeOnPrimary = Color(0xFFFFFFFF)
 val MilkyCoffeePrimaryContainer = Color(0xFFF3E7DC)
@@ -97,150 +172,150 @@ val MilkyCoffeeOnSurfaceVariantDark = Color(0xFFD6C8BC)
 val MilkyCoffeeOutlineDark = Color(0xFF9E8E82)
 val MilkyCoffeeOutlineVariantDark = Color(0xFF53463E)
 
-// 2. Matcha Green Theme Palette
+// Matcha Green Theme Palette
 val MatchaPrimary = Color(0xFF2E6B34)
 val MatchaOnPrimary = Color(0xFFFFFFFF)
 val MatchaPrimaryContainer = Color(0xFFD8ECD8)
-val MatchaOnPrimaryContainer = Color(0xFF0C2B10)
-val MatchaSecondary = Color(0xFF4C7E52)
+val MatchaOnPrimaryContainer = Color(0xFF09210C)
+val MatchaSecondary = Color(0xFF53634F)
 val MatchaOnSecondary = Color(0xFFFFFFFF)
-val MatchaSecondaryContainer = Color(0xFFDEEBDF)
-val MatchaOnSecondaryContainer = Color(0xFF192C1D)
-val MatchaTertiary = Color(0xFF388550)
+val MatchaSecondaryContainer = Color(0xFFD6E8D0)
+val MatchaOnSecondaryContainer = Color(0xFF111F0F)
+val MatchaTertiary = Color(0xFF386567)
 val MatchaOnTertiary = Color(0xFFFFFFFF)
-val MatchaBackgroundLight = Color(0xFFF6FAF6)
-val MatchaOnBackgroundLight = Color(0xFF182219)
+val MatchaBackgroundLight = Color(0xFFF7FAF7)
+val MatchaOnBackgroundLight = Color(0xFF191D19)
 val MatchaSurfaceLight = Color(0xFFFFFFFF)
-val MatchaOnSurfaceLight = Color(0xFF182219)
-val MatchaSurfaceVariantLight = Color(0xFFE5EFE6)
-val MatchaOnSurfaceVariantLight = Color(0xFF435245)
-val MatchaOutlineLight = Color(0xFFC4D5C6)
-val MatchaOutlineVariantLight = Color(0xFFDDE7DF)
+val MatchaOnSurfaceLight = Color(0xFF191D19)
+val MatchaSurfaceVariantLight = Color(0xFFDEE5D8)
+val MatchaOnSurfaceVariantLight = Color(0xFF424940)
+val MatchaOutlineLight = Color(0xFFC2CCC0)
+val MatchaOutlineVariantLight = Color(0xFFDCE6DA)
 
-val MatchaPrimaryDark = Color(0xFF9FD6A4)
-val MatchaOnPrimaryDark = Color(0xFF003911)
-val MatchaPrimaryContainerDark = Color(0xFF16511E)
-val MatchaOnPrimaryContainerDark = Color(0xFFD8ECD8)
-val MatchaSecondaryDark = Color(0xFFBBDCBF)
-val MatchaOnSecondaryDark = Color(0xFF203723)
-val MatchaSecondaryContainerDark = Color(0xFF354E38)
-val MatchaOnSecondaryContainerDark = Color(0xFFD8E8DA)
-val MatchaBackgroundDark = Color(0xFF111712)
-val MatchaOnBackgroundDark = Color(0xFFE2EBE3)
-val MatchaSurfaceDark = Color(0xFF182219)
-val MatchaOnSurfaceDark = Color(0xFFE2EBE3)
-val MatchaSurfaceVariantDark = Color(0xFF2C392E)
-val MatchaOnSurfaceVariantDark = Color(0xFFC4D5C6)
-val MatchaOutlineDark = Color(0xFF869B89)
-val MatchaOutlineVariantDark = Color(0xFF435245)
+val MatchaPrimaryDark = Color(0xFF95D79B)
+val MatchaOnPrimaryDark = Color(0xFF003912)
+val MatchaPrimaryContainerDark = Color(0xFF155220)
+val MatchaOnPrimaryContainerDark = Color(0xFFB1F4B6)
+val MatchaSecondaryDark = Color(0xFFBACBB4)
+val MatchaOnSecondaryDark = Color(0xFF263423)
+val MatchaSecondaryContainerDark = Color(0xFF3C4B38)
+val MatchaOnSecondaryContainerDark = Color(0xFFD6E8D0)
+val MatchaBackgroundDark = Color(0xFF111511)
+val MatchaOnBackgroundDark = Color(0xFFE1E4DF)
+val MatchaSurfaceDark = Color(0xFF191D19)
+val MatchaOnSurfaceDark = Color(0xFFE1E4DF)
+val MatchaSurfaceVariantDark = Color(0xFF2F372E)
+val MatchaOnSurfaceVariantDark = Color(0xFFC2CCC0)
+val MatchaOutlineDark = Color(0xFF8C9388)
+val MatchaOutlineVariantDark = Color(0xFF424940)
 
-// 3. Espresso Amber Theme Palette
+// Espresso Amber Theme Palette
 val EspressoPrimary = Color(0xFF8F4314)
 val EspressoOnPrimary = Color(0xFFFFFFFF)
 val EspressoPrimaryContainer = Color(0xFFFCE6D6)
-val EspressoOnPrimaryContainer = Color(0xFF331402)
-val EspressoSecondary = Color(0xFFA36338)
+val EspressoOnPrimaryContainer = Color(0xFF351201)
+val EspressoSecondary = Color(0xFF765848)
 val EspressoOnSecondary = Color(0xFFFFFFFF)
-val EspressoSecondaryContainer = Color(0xFFF7E2D2)
-val EspressoOnSecondaryContainer = Color(0xFF372011)
-val EspressoTertiary = Color(0xFFB55D28)
+val EspressoSecondaryContainer = Color(0xFFF4DFD4)
+val EspressoOnSecondaryContainer = Color(0xFF2B160B)
+val EspressoTertiary = Color(0xFF675F31)
 val EspressoOnTertiary = Color(0xFFFFFFFF)
-val EspressoBackgroundLight = Color(0xFFFDF8F4)
-val EspressoOnBackgroundLight = Color(0xFF251B15)
+val EspressoBackgroundLight = Color(0xFFFCF8F5)
+val EspressoOnBackgroundLight = Color(0xFF201B17)
 val EspressoSurfaceLight = Color(0xFFFFFFFF)
-val EspressoOnSurfaceLight = Color(0xFF251B15)
+val EspressoOnSurfaceLight = Color(0xFF201B17)
 val EspressoSurfaceVariantLight = Color(0xFFF4ECE4)
-val EspressoOnSurfaceVariantLight = Color(0xFF564438)
-val EspressoOutlineLight = Color(0xFFDAC6B8)
-val EspressoOutlineVariantLight = Color(0xFFEBDFD5)
+val EspressoOnSurfaceVariantLight = Color(0xFF52443C)
+val EspressoOutlineLight = Color(0xFFD7C8BD)
+val EspressoOutlineVariantLight = Color(0xFFEAE0D6)
 
-val EspressoPrimaryDark = Color(0xFFF3B78E)
-val EspressoOnPrimaryDark = Color(0xFF522304)
-val EspressoPrimaryContainerDark = Color(0xFF6F3007)
-val EspressoOnPrimaryContainerDark = Color(0xFFFCE6D6)
-val EspressoSecondaryDark = Color(0xFFDFC0A7)
-val EspressoOnSecondaryDark = Color(0xFF402616)
-val EspressoSecondaryContainerDark = Color(0xFF5A3C29)
-val EspressoOnSecondaryContainerDark = Color(0xFFF4E3D5)
-val EspressoBackgroundDark = Color(0xFF1A130E)
-val EspressoOnBackgroundDark = Color(0xFFEFE6DF)
-val EspressoSurfaceDark = Color(0xFF251B15)
-val EspressoOnSurfaceDark = Color(0xFFEFE6DF)
-val EspressoSurfaceVariantDark = Color(0xFF3F3127)
-val EspressoOnSurfaceVariantDark = Color(0xFFDAC6B8)
-val EspressoOutlineDark = Color(0xFFA08B7D)
-val EspressoOutlineVariantDark = Color(0xFF564438)
+val EspressoPrimaryDark = Color(0xFFFFB590)
+val EspressoOnPrimaryDark = Color(0xFF542100)
+val EspressoPrimaryContainerDark = Color(0xFF733207)
+val EspressoOnPrimaryContainerDark = Color(0xFFFFDCC9)
+val EspressoSecondaryDark = Color(0xFFE6BEAB)
+val EspressoOnSecondaryDark = Color(0xFF432B1D)
+val EspressoSecondaryContainerDark = Color(0xFF5C4132)
+val EspressoOnSecondaryContainerDark = Color(0xFFFFDCC9)
+val EspressoBackgroundDark = Color(0xFF18120E)
+val EspressoOnBackgroundDark = Color(0xFFEDE0D9)
+val EspressoSurfaceDark = Color(0xFF211A15)
+val EspressoOnSurfaceDark = Color(0xFFEDE0D9)
+val EspressoSurfaceVariantDark = Color(0xFF3C312A)
+val EspressoOnSurfaceVariantDark = Color(0xFFD7C8BD)
+val EspressoOutlineDark = Color(0xFF9E8D82)
+val EspressoOutlineVariantDark = Color(0xFF52443C)
 
-// 4. Berry Roaster Theme Palette
+// Berry Roaster Theme Palette
 val BerryPrimary = Color(0xFF8E2A59)
 val BerryOnPrimary = Color(0xFFFFFFFF)
 val BerryPrimaryContainer = Color(0xFFFDD9E8)
-val BerryOnPrimaryContainer = Color(0xFF3B0520)
-val BerrySecondary = Color(0xFFA34975)
+val BerryOnPrimaryContainer = Color(0xFF3B0822)
+val BerrySecondary = Color(0xFF745663)
 val BerryOnSecondary = Color(0xFFFFFFFF)
-val BerrySecondaryContainer = Color(0xFFF7DDE8)
-val BerryOnSecondaryContainer = Color(0xFF3B1426)
-val BerryTertiary = Color(0xFFAC3B6B)
+val BerrySecondaryContainer = Color(0xFFF3DDE6)
+val BerryOnSecondaryContainer = Color(0xFF2B1520)
+val BerryTertiary = Color(0xFF7C5635)
 val BerryOnTertiary = Color(0xFFFFFFFF)
-val BerryBackgroundLight = Color(0xFFFCF6F9)
-val BerryOnBackgroundLight = Color(0xFF24161E)
+val BerryBackgroundLight = Color(0xFFFCF7F9)
+val BerryOnBackgroundLight = Color(0xFF201A1C)
 val BerrySurfaceLight = Color(0xFFFFFFFF)
-val BerryOnSurfaceLight = Color(0xFF24161E)
-val BerrySurfaceVariantLight = Color(0xFFF3E7ED)
-val BerryOnSurfaceVariantLight = Color(0xFF56424C)
-val BerryOutlineLight = Color(0xFFDAC3CE)
-val BerryOutlineVariantLight = Color(0xFFEBDDE3)
+val BerryOnSurfaceLight = Color(0xFF201A1C)
+val BerrySurfaceVariantLight = Color(0xFFF2E7EC)
+val BerryOnSurfaceVariantLight = Color(0xFF514349)
+val BerryOutlineLight = Color(0xFFD5C4CB)
+val BerryOutlineVariantLight = Color(0xFFE8DBE1)
 
-val BerryPrimaryDark = Color(0xFFF4A8CA)
-val BerryOnPrimaryDark = Color(0xFF54002F)
-val BerryPrimaryContainerDark = Color(0xFF70123F)
-val BerryOnPrimaryContainerDark = Color(0xFFFDD9E8)
-val BerrySecondaryDark = Color(0xFFDEB5C8)
-val BerryOnSecondaryDark = Color(0xFF431F30)
-val BerrySecondaryContainerDark = Color(0xFF5D3346)
-val BerryOnSecondaryContainerDark = Color(0xFFF6E1EC)
-val BerryBackgroundDark = Color(0xFF1A0E15)
-val BerryOnBackgroundDark = Color(0xFFEFE3E8)
-val BerrySurfaceDark = Color(0xFF24161E)
-val BerryOnSurfaceDark = Color(0xFFEFE3E8)
-val BerrySurfaceVariantDark = Color(0xFF3E2D36)
-val BerryOnSurfaceVariantDark = Color(0xFFDAC3CE)
-val BerryOutlineDark = Color(0xFFA18895)
-val BerryOutlineVariantDark = Color(0xFF56424C)
+val BerryPrimaryDark = Color(0xFFFFB0D0)
+val BerryOnPrimaryDark = Color(0xFF560030)
+val BerryPrimaryContainerDark = Color(0xFF721243)
+val BerryOnPrimaryContainerDark = Color(0xFFFFD8E6)
+val BerrySecondaryDark = Color(0xFFE2BDCC)
+val BerryOnSecondaryDark = Color(0xFF422935)
+val BerrySecondaryContainerDark = Color(0xFF5B3F4B)
+val BerryOnSecondaryContainerDark = Color(0xFFFFD8E7)
+val BerryBackgroundDark = Color(0xFF171114)
+val BerryOnBackgroundDark = Color(0xFFECE0E4)
+val BerrySurfaceDark = Color(0xFF201A1D)
+val BerryOnSurfaceDark = Color(0xFFECE0E4)
+val BerrySurfaceVariantDark = Color(0xFF3B3036)
+val BerryOnSurfaceVariantDark = Color(0xFFD5C4CB)
+val BerryOutlineDark = Color(0xFF9E8E95)
+val BerryOutlineVariantDark = Color(0xFF514349)
 
-// 5. Nordic Slate Theme Palette
+// Nordic Slate Theme Palette
 val NordicPrimary = Color(0xFF285D7C)
 val NordicOnPrimary = Color(0xFFFFFFFF)
 val NordicPrimaryContainer = Color(0xFFDAEBF5)
-val NordicOnPrimaryContainer = Color(0xFF042436)
-val NordicSecondary = Color(0xFF4A7B9B)
+val NordicOnPrimaryContainer = Color(0xFF031E2D)
+val NordicSecondary = Color(0xFF4F616D)
 val NordicOnSecondary = Color(0xFFFFFFFF)
-val NordicSecondaryContainer = Color(0xFFDEEBF2)
-val NordicOnSecondaryContainer = Color(0xFF122835)
-val NordicTertiary = Color(0xFF387299)
+val NordicSecondaryContainer = Color(0xFFD2E5F3)
+val NordicOnSecondaryContainer = Color(0xFF0B1D28)
+val NordicTertiary = Color(0xFF625B71)
 val NordicOnTertiary = Color(0xFFFFFFFF)
-val NordicBackgroundLight = Color(0xFFF4F8FA)
-val NordicOnBackgroundLight = Color(0xFF161E23)
+val NordicBackgroundLight = Color(0xFFF6F9FB)
+val NordicOnBackgroundLight = Color(0xFF181C1F)
 val NordicSurfaceLight = Color(0xFFFFFFFF)
-val NordicOnSurfaceLight = Color(0xFF161E23)
-val NordicSurfaceVariantLight = Color(0xFFE3EDF2)
-val NordicOnSurfaceVariantLight = Color(0xFF3F4F57)
-val NordicOutlineLight = Color(0xFFC0D2DC)
-val NordicOutlineVariantLight = Color(0xFFDAE5EB)
+val NordicOnSurfaceLight = Color(0xFF181C1F)
+val NordicSurfaceVariantLight = Color(0xFFDFE6EB)
+val NordicOnSurfaceVariantLight = Color(0xFF42474B)
+val NordicOutlineLight = Color(0xFFC3CAD0)
+val NordicOutlineVariantLight = Color(0xFFDCE2E7)
 
-val NordicPrimaryDark = Color(0xFF9BCEEB)
+val NordicPrimaryDark = Color(0xFF98CCF0)
 val NordicOnPrimaryDark = Color(0xFF00344D)
-val NordicPrimaryContainerDark = Color(0xFF0E4362)
-val NordicOnPrimaryContainerDark = Color(0xFFDAEBF5)
-val NordicSecondaryDark = Color(0xFFB4D3E5)
-val NordicOnSecondaryDark = Color(0xFF1C3442)
-val NordicSecondaryContainerDark = Color(0xFF324C5B)
-val NordicOnSecondaryContainerDark = Color(0xFFD6E7F1)
-val NordicBackgroundDark = Color(0xFF0E151A)
-val NordicOnBackgroundDark = Color(0xFFE1EAF0)
-val NordicSurfaceDark = Color(0xFF161E23)
-val NordicOnSurfaceDark = Color(0xFFE1EAF0)
-val NordicSurfaceVariantDark = Color(0xFF29363E)
-val NordicOnSurfaceVariantDark = Color(0xFFC0D2DC)
-val NordicOutlineDark = Color(0xFF8398A3)
-val NordicOutlineVariantDark = Color(0xFF3F4F57)
+val NordicPrimaryContainerDark = Color(0xFF064B6A)
+val NordicOnPrimaryContainerDark = Color(0xFFC9E6FA)
+val NordicSecondaryDark = Color(0xFFB7C9D7)
+val NordicOnSecondaryDark = Color(0xFF21323D)
+val NordicSecondaryContainerDark = Color(0xFF384954)
+val NordicOnSecondaryContainerDark = Color(0xFFD2E5F3)
+val NordicBackgroundDark = Color(0xFF101417)
+val NordicOnBackgroundDark = Color(0xFFDFE3E6)
+val NordicSurfaceDark = Color(0xFF181C1F)
+val NordicOnSurfaceDark = Color(0xFFDFE3E6)
+val NordicSurfaceVariantDark = Color(0xFF2D353A)
+val NordicOnSurfaceVariantDark = Color(0xFFC3CAD0)
+val NordicOutlineDark = Color(0xFF8D949A)
+val NordicOutlineVariantDark = Color(0xFF42474B)

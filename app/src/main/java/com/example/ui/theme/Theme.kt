@@ -9,10 +9,51 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 fun getLightColorScheme(themeColor: AppThemeColor): ColorScheme {
     return when (themeColor) {
+        AppThemeColor.PIXEL_JRPG -> darkColorScheme(
+            primary = PixelJrpgPrimary,
+            onPrimary = PixelJrpgOnPrimary,
+            primaryContainer = PixelJrpgPrimaryContainer,
+            onPrimaryContainer = PixelJrpgOnPrimaryContainer,
+            secondary = PixelJrpgSecondary,
+            onSecondary = PixelJrpgOnSecondary,
+            secondaryContainer = PixelJrpgSecondaryContainer,
+            onSecondaryContainer = PixelJrpgOnSecondaryContainer,
+            tertiary = PixelJrpgTertiary,
+            onTertiary = PixelJrpgOnTertiary,
+            background = PixelJrpgBackgroundLight,
+            onBackground = PixelJrpgOnBackgroundLight,
+            surface = PixelJrpgSurfaceLight,
+            onSurface = PixelJrpgOnSurfaceLight,
+            surfaceVariant = PixelJrpgSurfaceVariantLight,
+            onSurfaceVariant = PixelJrpgOnSurfaceVariantLight,
+            outline = PixelJrpgOutlineLight,
+            outlineVariant = PixelJrpgOutlineVariantLight
+        )
+        AppThemeColor.TAVERN_PARCHMENT -> lightColorScheme(
+            primary = TavernPrimary,
+            onPrimary = TavernOnPrimary,
+            primaryContainer = TavernPrimaryContainer,
+            onPrimaryContainer = TavernOnPrimaryContainer,
+            secondary = TavernSecondary,
+            onSecondary = TavernOnSecondary,
+            secondaryContainer = TavernSecondaryContainer,
+            onSecondaryContainer = TavernOnSecondaryContainer,
+            tertiary = TavernTertiary,
+            onTertiary = TavernOnTertiary,
+            background = TavernBackgroundLight,
+            onBackground = TavernOnBackgroundLight,
+            surface = TavernSurfaceLight,
+            onSurface = TavernOnSurfaceLight,
+            surfaceVariant = TavernSurfaceVariantLight,
+            onSurfaceVariant = TavernOnSurfaceVariantLight,
+            outline = TavernOutlineLight,
+            outlineVariant = TavernOutlineVariantLight
+        )
         AppThemeColor.MILKY_COFFEE -> lightColorScheme(
             primary = MilkyCoffeePrimary,
             onPrimary = MilkyCoffeeOnPrimary,
@@ -118,6 +159,46 @@ fun getLightColorScheme(themeColor: AppThemeColor): ColorScheme {
 
 fun getDarkColorScheme(themeColor: AppThemeColor): ColorScheme {
     return when (themeColor) {
+        AppThemeColor.PIXEL_JRPG -> darkColorScheme(
+            primary = PixelJrpgPrimaryDark,
+            onPrimary = PixelJrpgOnPrimaryDark,
+            primaryContainer = PixelJrpgPrimaryContainerDark,
+            onPrimaryContainer = PixelJrpgOnPrimaryContainerDark,
+            secondary = PixelJrpgSecondaryDark,
+            onSecondary = PixelJrpgOnSecondaryDark,
+            secondaryContainer = PixelJrpgSecondaryContainerDark,
+            onSecondaryContainer = PixelJrpgOnSecondaryContainerDark,
+            tertiary = PixelJrpgTertiaryDark,
+            onTertiary = PixelJrpgOnTertiaryDark,
+            background = PixelJrpgBackgroundDark,
+            onBackground = PixelJrpgOnBackgroundDark,
+            surface = PixelJrpgSurfaceDark,
+            onSurface = PixelJrpgOnSurfaceDark,
+            surfaceVariant = PixelJrpgSurfaceVariantDark,
+            onSurfaceVariant = PixelJrpgOnSurfaceVariantDark,
+            outline = PixelJrpgOutlineDark,
+            outlineVariant = PixelJrpgOutlineVariantDark
+        )
+        AppThemeColor.TAVERN_PARCHMENT -> darkColorScheme(
+            primary = Color(0xFFD4A373),
+            onPrimary = Color(0xFF2C1908),
+            primaryContainer = Color(0xFF4E3014),
+            onPrimaryContainer = Color(0xFFFEEAD8),
+            secondary = Color(0xFFA3B899),
+            onSecondary = Color(0xFF1E2E16),
+            secondaryContainer = Color(0xFF33442A),
+            onSecondaryContainer = Color(0xFFE2EEDC),
+            tertiary = Color(0xFFE2847A),
+            onTertiary = Color(0xFF44120D),
+            background = Color(0xFF1A130E),
+            onBackground = Color(0xFFF3E7DC),
+            surface = Color(0xFF241A13),
+            onSurface = Color(0xFFF3E7DC),
+            surfaceVariant = Color(0xFF3B2E24),
+            onSurfaceVariant = Color(0xFFD8C7B8),
+            outline = Color(0xFFB59A82),
+            outlineVariant = Color(0xFF5E4939)
+        )
         AppThemeColor.MILKY_COFFEE -> darkColorScheme(
             primary = MilkyCoffeePrimaryDark,
             onPrimary = MilkyCoffeeOnPrimaryDark,
@@ -224,7 +305,7 @@ fun getDarkColorScheme(themeColor: AppThemeColor): ColorScheme {
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    themeColor: AppThemeColor = AppThemeColor.MILKY_COFFEE,
+    themeColor: AppThemeColor = AppThemeColor.PIXEL_JRPG,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {

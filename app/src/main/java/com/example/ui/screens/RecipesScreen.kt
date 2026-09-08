@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,14 +19,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Palette
@@ -34,10 +33,6 @@ import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,15 +50,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import com.example.ui.theme.instagramBounce
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.CoffeeRecipe
 import com.example.ui.RecipeRatingSummary
+import com.example.ui.theme.PixelBadge
+import com.example.ui.theme.PixelButton
+import com.example.ui.theme.PixelWindow
 import java.util.Locale
 
 @Composable
@@ -85,81 +83,106 @@ fun RecipesScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Screen Header
+            // Screen Header Window
             item {
-                Row(
+                PixelWindow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    backgroundColor = MaterialTheme.colorScheme.surface,
+                    borderColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Column {
-                        Text(
-                            text = "RECIPES & METHODS",
-                            style = MaterialTheme.typography.labelSmall,
-                            letterSpacing = 1.5.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Coffee Recipes",
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Theme Settings Button
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable { onOpenSettings() }
-                                .testTag("btn_open_settings_recipes")
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                Icons.Default.Palette,
-                                contentDescription = "Theme Color Settings",
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .size(18.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                            Column {
+                                Text(
+                                    text = "◆ SACRED GRIMOIRE ◆",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 14.sp,
+                                    letterSpacing = 1.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "ANCIENT INFUSION FORMULAS",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                            }
 
-                        // Toggle Ratio Calculator Button
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = if (showRatioCalculator) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, if (showRatioCalculator) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable { showRatioCalculator = !showRatioCalculator }
-                        ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Icon(
-                                    Icons.Default.Calculate,
-                                    contentDescription = "Ratio Cal",
-                                    modifier = Modifier.size(18.dp),
-                                    tint = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .border(1.dp, MaterialTheme.colorScheme.primary)
+                                        .clickable { onOpenSettings() }
+                                        .testTag("btn_open_settings"),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Default.Palette,
+                                        contentDescription = "Theme Color Settings",
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                PixelButton(
+                                    text = "+ INSCRIBE",
+                                    onClick = onOpenAddRecipeDialog,
+                                    testTag = "btn_add_recipe_header"
                                 )
+                            }
+                        }
+
+                        // Toggle Ratio Alchemy Tablet
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                                .clickable { showRatioCalculator = !showRatioCalculator }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                .testTag("btn_toggle_ratio_calc")
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = "🔮 ALCHEMICAL RATIO SCROLL",
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                                 Text(
-                                    text = "Ratio Cal",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Black,
-                                    color = if (showRatioCalculator) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                                    text = if (showRatioCalculator) "▲ COLLAPSE" else "▼ REVEAL",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
@@ -167,126 +190,91 @@ fun RecipesScreen(
                 }
             }
 
-            // Interactive Ratio Calculator Card
+            // Ratio Alchemy Calculator Box
             if (showRatioCalculator) {
                 item {
                     val calcWater = calcCoffeeGrams * calcRatio
-                    Card(
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-                        modifier = Modifier.fillMaxWidth()
+                    PixelWindow(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                        borderColor = MaterialTheme.colorScheme.primary
                     ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "◆ WATER & COFFEE PROPORTIONS ◆",
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Black.copy(alpha = 0.25f))
+                                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                                    .padding(8.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "BREW RATIO CAL",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    letterSpacing = 1.sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                                Text(
-                                    text = "1:%.1f".format(Locale.US, calcRatio),
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Clickable Coffee Dose to enter exact amount without using slider bar
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable {
-                                            doseInputText = if (calcCoffeeGrams % 1.0 == 0.0) {
-                                                calcCoffeeGrams.toInt().toString()
-                                            } else {
-                                                "%.1f".format(Locale.US, calcCoffeeGrams)
-                                            }
-                                            showCoffeeDoseDialog = true
-                                        }
-                                        .testTag("btn_coffee_dose_push")
-                                ) {
-                                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            Text(
-                                                text = "COFFEE DOSE",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                letterSpacing = 1.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                            Icon(
-                                                Icons.Default.Edit,
-                                                contentDescription = "Edit coffee dose",
-                                                modifier = Modifier.size(13.dp),
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                        Text(
-                                            text = "%.1fg".format(Locale.US, calcCoffeeGrams),
-                                            style = MaterialTheme.typography.headlineLarge,
-                                            fontWeight = FontWeight.Black,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Text(
-                                            text = "Push to enter amount",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
+                                Column(
+                                    modifier = Modifier.clickable {
+                                        doseInputText = if (calcCoffeeGrams % 1.0 == 0.0) calcCoffeeGrams.toInt().toString() else calcCoffeeGrams.toString()
+                                        showCoffeeDoseDialog = true
                                     }
+                                ) {
+                                    Text(
+                                        text = "COFFEE BEANS",
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 9.sp,
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                    Text(
+                                        text = "%.1fg ✎".format(Locale.US, calcCoffeeGrams),
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 15.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
                                 }
 
                                 Text(
                                     text = "➔",
-                                    style = MaterialTheme.typography.headlineLarge,
+                                    fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Black,
+                                    fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.primary
                                 )
 
                                 Column(horizontalAlignment = Alignment.End) {
                                     Text(
-                                        text = "WATER YIELD",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        letterSpacing = 1.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        text = "WATER FLUID",
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 9.sp,
+                                        color = MaterialTheme.colorScheme.secondary
                                     )
                                     Text(
-                                        text = "${calcWater.toInt()} ml",
-                                        style = MaterialTheme.typography.headlineLarge,
+                                        text = "${calcWater.toInt()}ml",
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Black,
+                                        fontSize = 15.sp,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            // Coffee Slider
+                            // Slider
                             Text(
-                                text = "Adjust Coffee: ${calcCoffeeGrams.toInt()}g (or push dose above)",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold,
+                                text = "Dose: ${calcCoffeeGrams.toInt()}g",
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Slider(
@@ -300,30 +288,28 @@ fun RecipesScreen(
                                 )
                             )
 
-                            // Quick preset ratio chips
+                            // Quick preset ratios
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                modifier = Modifier.padding(top = 4.dp)
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                listOf(15.0 to "1:15 (Strong)", 16.7 to "1:16.7 (V60)", 18.0 to "1:18 (Light)").forEach { (ratio, label) ->
+                                listOf(15.0 to "1:15 (STRONG)", 16.7 to "1:16.7 (V60)", 18.0 to "1:18 (LIGHT)").forEach { (ratio, label) ->
                                     val isCurrent = (calcRatio - ratio).let { Math.abs(it) < 0.2 }
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = if (isCurrent) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                                        border = BorderStroke(1.dp, if (isCurrent) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                                    Box(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                                            .border(1.dp, if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
                                             .clickable { calcRatio = ratio }
+                                            .padding(vertical = 6.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Text(
                                             text = label,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            fontSize = 11.sp,
-                                            fontWeight = if (isCurrent) FontWeight.Black else FontWeight.Medium,
-                                            color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(vertical = 8.dp),
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = if (isCurrent) FontWeight.Black else FontWeight.Bold,
+                                            fontSize = 9.sp,
+                                            color = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 }
@@ -333,112 +319,65 @@ fun RecipesScreen(
                 }
             }
 
-            // Recipe items with smooth spring animation
+            // Recipe Items (Grimoire Spells)
             items(recipes, key = { it.id }) { recipe ->
                 val ratingSummary = recipeRatings[recipe.name]
-                RecipeCard(
+                PixelRecipeCard(
                     recipe = recipe,
                     ratingSummary = ratingSummary,
                     onStartTimer = { onStartTimer(recipe) },
                     onOpenLogSheet = { onOpenLogSheet(recipe) },
-                    onDelete = { onDeleteRecipe(recipe.id) },
-                    modifier = Modifier.animateItem()
+                    onDelete = { onDeleteRecipe(recipe.id) }
                 )
             }
         }
 
-        // Floating Action Button to Add Recipe
-        FloatingActionButton(
-            onClick = onOpenAddRecipeDialog,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = RoundedCornerShape(18.dp),
+        // Floating Action Button to Inscribe Recipe
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp)
-                .instagramBounce(scaleDown = 0.92f) { onOpenAddRecipeDialog() }
-                .testTag("fab_add_recipe")
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Recipe")
-                Text(
-                    text = "New Recipe",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Black
-                )
-            }
+            PixelButton(
+                text = "+ INSCRIBE SPELL",
+                onClick = onOpenAddRecipeDialog,
+                testTag = "fab_add_recipe"
+            )
         }
 
-        // Dialog to manually enter coffee dose without using the slider bar
+        // Dialog to manually enter coffee dose
         if (showCoffeeDoseDialog) {
             AlertDialog(
                 onDismissRequest = { showCoffeeDoseDialog = false },
                 title = {
                     Text(
-                        text = "Enter Coffee Dose",
-                        style = MaterialTheme.typography.titleLarge,
+                        text = "◆ ENTER COFFEE DOSE ◆",
+                        fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Black
                     )
                 },
                 text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
-                            text = "Enter the exact coffee dose in grams so you don't need to use the slider bar:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = "Inscribe thy desired coffee dose (grams):",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp
                         )
                         OutlinedTextField(
                             value = doseInputText,
                             onValueChange = { doseInputText = it },
-                            label = { Text("Coffee Dose") },
-                            trailingIcon = { Text("g", modifier = Modifier.padding(end = 12.dp), fontWeight = FontWeight.Bold) },
+                            label = { Text("Dose (grams)", fontFamily = FontFamily.Monospace) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("input_coffee_dose_field")
                         )
-
-                        Text(
-                            text = "Quick Presets",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            listOf(12.0, 15.0, 18.0, 20.0, 24.0, 30.0).forEach { preset ->
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            doseInputText = if (preset % 1.0 == 0.0) preset.toInt().toString() else preset.toString()
-                                        }
-                                ) {
-                                    Text(
-                                        text = "${preset.toInt()}g",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-                            }
-                        }
                     }
                 },
                 confirmButton = {
-                    Button(
+                    PixelButton(
+                        text = "SAVE",
                         onClick = {
                             val parsed = doseInputText.trim().replace(',', '.').toDoubleOrNull()
                             if (parsed != null && parsed > 0) {
@@ -446,15 +385,12 @@ fun RecipesScreen(
                             }
                             showCoffeeDoseDialog = false
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.testTag("btn_save_dose")
-                    ) {
-                        Text("Set Dose", fontWeight = FontWeight.Bold)
-                    }
+                        testTag = "btn_save_dose"
+                    )
                 },
                 dismissButton = {
                     TextButton(onClick = { showCoffeeDoseDialog = false }) {
-                        Text("Cancel")
+                        Text("CANCEL", fontFamily = FontFamily.Monospace)
                     }
                 }
             )
@@ -463,13 +399,12 @@ fun RecipesScreen(
 }
 
 @Composable
-fun RecipeCard(
+fun PixelRecipeCard(
     recipe: CoffeeRecipe,
     ratingSummary: RecipeRatingSummary? = null,
     onStartTimer: () -> Unit,
     onOpenLogSheet: () -> Unit,
-    onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    onDelete: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -477,15 +412,19 @@ fun RecipeCard(
     val sec = recipe.targetTimeSeconds % 60
     val timeFormatted = if (min > 60) "${min / 60}h" else "%d:%02d".format(Locale.US, min, sec)
 
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-        modifier = modifier
+    PixelWindow(
+        modifier = Modifier
             .fillMaxWidth()
-            .testTag("recipe_card_${recipe.id}")
+            .testTag("recipe_card_${recipe.id}"),
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        borderColor = MaterialTheme.colorScheme.primary
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             // Recipe Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -494,223 +433,153 @@ fun RecipeCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = recipe.name,
-                        style = MaterialTheme.typography.titleLarge,
+                        text = "◆ ${recipe.name.uppercase()} ◆",
+                        fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Black,
+                        fontSize = 13.sp,
+                        letterSpacing = 0.5.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.padding(top = 2.dp)
                     ) {
                         Text(
-                            text = recipe.method.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            letterSpacing = 1.sp,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.primary
+                            text = "[ SPELL: ${recipe.method.uppercase()} ]",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.secondary
                         )
 
-                        // Rating display badge
                         if (ratingSummary != null && ratingSummary.count > 0) {
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Star,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                    Text(
-                                        text = "%.1f (%d)".format(Locale.US, ratingSummary.averageRating, ratingSummary.count),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Text(
-                        text = recipe.ratio,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            // Origin, Roast & Notes metadata tags
-            if (recipe.coffeeOrigin.isNotBlank() || recipe.tastingNotes.isNotBlank()) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    if (recipe.coffeeOrigin.isNotBlank()) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                        ) {
                             Text(
-                                text = "🌍 ${recipe.coffeeOrigin}",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                    if (recipe.roastLevel.isNotBlank()) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                        ) {
-                            Text(
-                                text = "${recipe.roastLevel} Roast",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                text = "★ %.1f (%d)".format(Locale.US, ratingSummary.averageRating, ratingSummary.count),
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
                 }
 
-                if (recipe.tastingNotes.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Notes: ${recipe.tastingNotes}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                PixelBadge(text = recipe.ratio)
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Specs Row with Bold Typography
-            Row(
+            // Specs Row
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .background(Color.Black.copy(alpha = 0.25f))
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                    .padding(8.dp)
             ) {
-                Column {
-                    Text(
-                        text = "DOSE",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "%.0fg".format(Locale.US, recipe.defaultCoffeeGrams),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = "WATER",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "%.0f ml".format(Locale.US, recipe.defaultWaterGrams),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = "GRIND",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = recipe.grindSize,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = "TIME",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = timeFormatted,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-            }
-
-            // Steps preview if available
-            AnimatedVisibility(visible = isExpanded && recipe.steps.isNotBlank()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp)
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                            RoundedCornerShape(10.dp)
-                        )
-                        .padding(14.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "BREWING INSTRUCTIONS",
-                        style = MaterialTheme.typography.labelSmall,
-                        letterSpacing = 1.sp,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = recipe.steps,
-                        style = MaterialTheme.typography.bodyMedium,
-                        lineHeight = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Column {
+                        Text(
+                            text = "DOSE",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "%.0fg".format(Locale.US, recipe.defaultCoffeeGrams),
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "WATER",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "%.0fml".format(Locale.US, recipe.defaultWaterGrams),
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "GRIND",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = recipe.grindSize.split(" ").firstOrNull() ?: recipe.grindSize,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "TIME",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = timeFormatted,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            // Steps preview accordion
+            if (recipe.steps.isNotBlank()) {
+                AnimatedVisibility(visible = isExpanded) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .border(1.dp, MaterialTheme.colorScheme.outline)
+                            .padding(8.dp)
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "◆ BREWING INCANTATION ◆",
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = recipe.steps,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                lineHeight = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
 
             // Action Buttons
             Row(
@@ -718,74 +587,52 @@ fun RecipeCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Steps toggle
                 if (recipe.steps.isNotBlank()) {
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { isExpanded = !isExpanded }
-                            .padding(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = if (isExpanded) "Hide Steps" else "View Steps",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Icon(
-                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    Text(
+                        text = if (isExpanded) "▲ HIDE STEPS" else "▼ READ STEPS",
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { isExpanded = !isExpanded }
+                    )
                 } else {
                     Spacer(modifier = Modifier.width(1.dp))
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Log Brew button (switched to 1st position)
-                    Button(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    PixelButton(
+                        text = "☕ LOG",
                         onClick = onOpenLogSheet,
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier
-                            .instagramBounce(scaleDown = 0.94f) { onOpenLogSheet() }
-                            .testTag("btn_log_recipe_${recipe.id}")
-                    ) {
-                        Icon(Icons.Default.Coffee, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Log Brew", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
-                    }
+                        testTag = "btn_log_recipe_${recipe.id}"
+                    )
 
-                    // Pour Timer button (switched to 2nd position)
-                    FilledTonalButton(
+                    PixelButton(
+                        text = "⏱️ TIMER",
                         onClick = onStartTimer,
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                        modifier = Modifier
-                            .instagramBounce(scaleDown = 0.94f) { onStartTimer() }
-                            .testTag("btn_brew_timer_${recipe.id}")
-                    ) {
-                        Icon(Icons.Default.Timer, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Pour Timer", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
-                    }
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        borderColor = MaterialTheme.colorScheme.secondary,
+                        testTag = "btn_brew_timer_${recipe.id}"
+                    )
 
                     if (!recipe.isPreset) {
-                        IconButton(
-                            onClick = onDelete,
-                            modifier = Modifier.size(36.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .border(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
+                                .clickable { onDelete() },
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Default.DeleteOutline,
-                                contentDescription = "Delete custom recipe",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            Text(
+                                text = "✕",
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.tertiary
                             )
                         }
                     }

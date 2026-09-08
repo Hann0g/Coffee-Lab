@@ -1,6 +1,6 @@
 {
   "name": "Coffee Log",
-  "description": "Minimalist coffee brew tracker with habit analytics and AI coffee bag label scanner.",
+  "description": "Minimalist coffee brew tracker with AI Barista recipe assistant, habit analytics, and coffee bag scanner.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

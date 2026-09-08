@@ -1,8 +1,8 @@
 package com.example.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,25 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,15 +30,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.AppThemeColor
+import com.example.ui.theme.PixelBadge
+import com.example.ui.theme.PixelButton
+import com.example.ui.theme.PixelHpBar
+import com.example.ui.theme.PixelWindow
 
 @Composable
 fun SettingsDialog(
@@ -60,29 +52,26 @@ fun SettingsDialog(
     onDismiss: () -> Unit
 ) {
     var lockedThemeNotice by remember { mutableStateOf<String?>(null) }
-
-    // Find next locked theme
     val nextLockedTheme = AppThemeColor.entries.firstOrNull { !it.isUnlocked(trackedCoffees) }
 
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Card(
+        PixelWindow(
             modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .padding(vertical = 24.dp)
+                .fillMaxWidth(0.94f)
+                .padding(vertical = 20.dp)
                 .testTag("dialog_settings"),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            backgroundColor = MaterialTheme.colorScheme.surface,
+            borderColor = MaterialTheme.colorScheme.primary
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(24.dp)
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Header
                 Row(
@@ -90,414 +79,222 @@ fun SettingsDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Icon(
-                                Icons.Default.Palette,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .size(20.dp)
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "App Settings",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "Customize theme & appearance",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                    Column {
+                        Text(
+                            text = "◆ INNKEEPER'S PALETTES ◆",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "REALM COLOR & THEME CUSTOMIZATION",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
 
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.size(36.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .border(1.dp, MaterialTheme.colorScheme.outline)
+                            .clickable { onDismiss() },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        Text(
+                            text = "✕",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
-
-                // Tracker & Progression Roadmap Banner
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
-                    modifier = Modifier.fillMaxWidth()
+                // Progression HP Bar
+                PixelWindow(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = Color.Black.copy(alpha = 0.25f),
+                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Coffee,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = "TRACKER PROGRESSION",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Black,
-                                    letterSpacing = 1.sp,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
+                            Text(
+                                text = "⚔️ POTIONS LOGGED: $trackedCoffees",
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.primary
-                            ) {
+                            )
+                            if (nextLockedTheme != null) {
                                 Text(
-                                    text = "$trackedCoffees ${if (trackedCoffees == 1) "Coffee" else "Coffees"} Tracked",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    text = "NEXT: ${nextLockedTheme.displayName.uppercase()}",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
 
                         if (nextLockedTheme != null) {
-                            val remaining = nextLockedTheme.requiredCoffees - trackedCoffees
-                            val progress = (trackedCoffees.toFloat() / nextLockedTheme.requiredCoffees.toFloat()).coerceIn(0f, 1f)
-                            Text(
-                                text = "Next Unlock: ${nextLockedTheme.displayName} ($trackedCoffees/${nextLockedTheme.requiredCoffees} coffees — $remaining more to go)",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            LinearProgressIndicator(
-                                progress = { progress },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp)),
-                                color = MaterialTheme.colorScheme.primary,
-                                trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                strokeCap = StrokeCap.Round
+                            PixelHpBar(
+                                label = "EXP TO UNLOCK ${nextLockedTheme.displayName.uppercase()}",
+                                current = trackedCoffees,
+                                max = nextLockedTheme.requiredCoffees,
+                                barColor = MaterialTheme.colorScheme.primary
                             )
                         } else {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "Master Barista! All 5 color palettes unlocked.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            Text(
+                                text = "👑 MASTER ALCHEMIST: ALL PALETTES UNLOCKED!",
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
 
-                // Locked Theme Click Feedback Banner
+                // Locked notice banner
                 AnimatedVisibility(visible = lockedThemeNotice != null) {
                     if (lockedThemeNotice != null) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
-                            modifier = Modifier.fillMaxWidth()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f))
+                                .border(1.dp, MaterialTheme.colorScheme.error)
+                                .padding(8.dp)
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                Text(
+                                    text = lockedThemeNotice ?: "",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
                                     modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Lock,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onErrorContainer,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Text(
-                                        text = lockedThemeNotice ?: "",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { lockedThemeNotice = null },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        contentDescription = "Dismiss notice",
-                                        tint = MaterialTheme.colorScheme.onErrorContainer,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
+                                )
+                                Text(
+                                    text = "✕",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.clickable { lockedThemeNotice = null }
+                                )
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                // Color Palettes
+                Text(
+                    text = "◆ SELECT COLOR CODEX (5 CHOICES) ◆",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
-                // Section Label
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "THEME PALETTES (5 CHOICES)",
-                        style = MaterialTheme.typography.labelSmall,
-                        letterSpacing = 1.2.sp,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "Unlock via brewing",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 5 Color Palette Options
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     AppThemeColor.entries.forEach { option ->
                         val isSelected = option == selectedThemeColor
                         val isUnlocked = option.isUnlocked(trackedCoffees)
                         val remaining = option.requiredCoffees - trackedCoffees
 
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = when {
-                                isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
-                                isUnlocked -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                            },
-                            border = BorderStroke(
-                                width = if (isSelected) 2.dp else 1.dp,
-                                color = when {
-                                    isSelected -> MaterialTheme.colorScheme.primary
-                                    isUnlocked -> MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-                                    else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
-                                }
-                            ),
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                .border(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                                )
                                 .clickable {
                                     if (isUnlocked) {
                                         lockedThemeNotice = null
                                         onSelectThemeColor(option)
                                     } else {
-                                        lockedThemeNotice = "Locked: Track $remaining more ${if (remaining == 1) "coffee" else "coffees"} to unlock ${option.displayName} (${option.requiredCoffees} total)!"
+                                        lockedThemeNotice = "🔒 Locked! Brew $remaining more potions to unlock ${option.displayName}."
                                     }
                                 }
+                                .padding(8.dp)
                                 .testTag("theme_color_${option.id}")
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                                    modifier = Modifier.weight(1f)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Dual Color Swatch Dot or Lock Icon
+                                    // Color swatch box
                                     Box(
                                         modifier = Modifier
-                                            .size(38.dp)
-                                            .clip(CircleShape)
-                                            .background(if (isUnlocked) option.previewColor else option.previewColor.copy(alpha = 0.4f)),
-                                        contentAlignment = if (isUnlocked) Alignment.BottomEnd else Alignment.Center
+                                            .size(24.dp)
+                                            .background(option.previewColor)
+                                            .border(1.dp, Color.White),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        if (isUnlocked) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(16.dp)
-                                                    .clip(CircleShape)
-                                                    .background(option.secondaryPreview)
-                                            )
-                                        } else {
-                                            Icon(
-                                                Icons.Default.Lock,
-                                                contentDescription = "Locked",
-                                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                                modifier = Modifier.size(18.dp)
-                                            )
+                                        if (!isUnlocked) {
+                                            Text(text = "🔒", fontSize = 10.sp)
                                         }
                                     }
 
                                     Column {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            Text(
-                                                text = option.displayName,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Black,
-                                                color = if (isUnlocked) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                            )
-                                            if (!isUnlocked) {
-                                                Surface(
-                                                    shape = RoundedCornerShape(6.dp),
-                                                    color = MaterialTheme.colorScheme.surfaceVariant
-                                                ) {
-                                                    Text(
-                                                        text = "🔒 ${option.requiredCoffees} COFFEES",
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        fontSize = 10.sp,
-                                                        fontWeight = FontWeight.Black,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                                    )
-                                                }
-                                            }
-                                        }
-
                                         Text(
-                                            text = if (isUnlocked) option.description else "Track ${option.requiredCoffees} coffees to unlock ($trackedCoffees/${option.requiredCoffees})",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            fontWeight = FontWeight.Medium,
-                                            color = if (isUnlocked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                            text = option.displayName.uppercase(),
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 11.sp,
+                                            color = if (isUnlocked) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                        )
+                                        Text(
+                                            text = if (isUnlocked) option.description.uppercase() else "REQ: ${option.requiredCoffees} POTIONS ($trackedCoffees/${option.requiredCoffees})",
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
 
                                 if (isSelected) {
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(24.dp)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Icon(
-                                                Icons.Default.Check,
-                                                contentDescription = "Selected",
-                                                tint = MaterialTheme.colorScheme.onPrimary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    }
-                                } else if (!isUnlocked) {
-                                    Icon(
-                                        Icons.Default.Lock,
-                                        contentDescription = "Locked",
-                                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                    PixelBadge(text = "EQUIPPED")
                                 }
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Live Preview Card
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Coffee,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Column {
-                            Text(
-                                text = "Active Theme: ${selectedThemeColor.displayName}",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "Applied across all buttons, cards, tags, and charts.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 // Done Button
-                Button(
+                PixelButton(
+                    text = "✦ DEPART SANCTUARY ✦",
                     onClick = onDismiss,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("btn_close_settings")
-                ) {
-                    Text(
-                        text = "Done",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "btn_close_settings"
+                )
             }
         }
     }

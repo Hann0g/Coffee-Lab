@@ -16,7 +16,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.ui.graphics.graphicsLayer
+import com.example.ui.theme.PixelWindow
+import com.example.ui.theme.PixelBadge
+import androidx.compose.foundation.border
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import com.example.ui.theme.instagramBounce
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -133,80 +138,76 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
         modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            Surface(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 3.dp,
-                shadowElevation = 8.dp
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                PixelWindow(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = MaterialTheme.colorScheme.surface,
+                    borderColor = MaterialTheme.colorScheme.primary
                 ) {
-                    listOf(
-                        Triple(CoffeeTab.LOG, "Brews", Icons.Default.Coffee),
-                        Triple(CoffeeTab.RECIPES, "Recipes", Icons.Default.MenuBook),
-                        Triple(CoffeeTab.STATS, "Beans & Stats", Icons.Default.BarChart)
-                    ).forEach { (tab, label, icon) ->
-                        val isSelected = uiState.currentTab == tab
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        listOf(
+                            Triple(CoffeeTab.LOG, "CHRONICLES", Icons.Default.Coffee),
+                            Triple(CoffeeTab.RECIPES, "GRIMOIRE", Icons.Default.MenuBook),
+                            Triple(CoffeeTab.STATS, "INVENTORY", Icons.Default.BarChart)
+                        ).forEach { (tab, label, icon) ->
+                            val isSelected = uiState.currentTab == tab
 
-                        val tabBgColor by animateColorAsState(
-                            targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
-                            label = "tab_bg"
-                        )
-                        val tabBorderColor by animateColorAsState(
-                            targetValue = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
-                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
-                            label = "tab_border"
-                        )
-                        val iconScale by animateFloatAsState(
-                            targetValue = if (isSelected) 1.15f else 1f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMediumLow
-                            ),
-                            label = "tab_icon_scale"
-                        )
-
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = tabBgColor,
-                            border = BorderStroke(1.dp, tabBorderColor),
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(14.dp))
-                                .instagramBounce(scaleDown = 0.94f) { viewModel.setTab(tab) }
-                                .testTag("tab_${tab.name.lowercase()}")
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                                    )
+                                    .border(
+                                        width = if (isSelected) 2.dp else 1.dp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                                    )
+                                    .clickable { viewModel.setTab(tab) }
+                                    .padding(vertical = 8.dp, horizontal = 4.dp)
+                                    .testTag("tab_${tab.name.lowercase()}"),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = label,
-                                    modifier = Modifier
-                                        .size(16.dp)
-                                        .graphicsLayer {
-                                            scaleX = iconScale
-                                            scaleY = iconScale
-                                        },
-                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    if (isSelected) {
+                                        Text(
+                                            text = "▶",
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(3.dp))
+                                    }
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = label,
+                                        modifier = Modifier.size(13.dp),
+                                        tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = label,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 10.sp,
+                                        fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                                        letterSpacing = 0.5.sp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -378,6 +379,7 @@ fun CoffeeApp(viewModel: CoffeeViewModel = viewModel()) {
     // Add Recipe Dialog
     if (showAddRecipeDialog) {
         AddRecipeDialog(
+            beanBags = uiState.beanBags,
             onDismiss = { showAddRecipeDialog = false },
             onSave = { name, method, origin, roast, notes, coffeeGrams, waterGrams, ratio, grindSize, targetTime, targetTemp, steps ->
                 viewModel.saveRecipe(
